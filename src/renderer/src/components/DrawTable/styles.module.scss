@@ -1,0 +1,31 @@
+.container {
+  width: 100%;
+  height: 100%;
+  background-color: #aaa;
+  position: relative;
+  overflow: hidden;
+  .origin {
+    width: 0;
+    height: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+  }
+  .canvas {
+    background: #fff;
+    translate: -50% -50%;
+    touch-action: none;
+    cursor: none;
+  }
+  .nib-layer {
+    position: absolute;
+    z-index: 2;
+  }
+  .nib {
+    position: absolute;
+    translate: -50% -50%;
+    border: 1px solid;
+    border-radius: 100px;
+    pointer-events: none;
+  }
+}
