@@ -24,3 +24,12 @@
     overflow: visible;
   }
 }
+
+.node {
+  background: #aaa;
+  border: 1px solid;
+  translate: -50% -50%;
+  position: absolute;
+  width: 200px;
+  height: 150px;
+}
