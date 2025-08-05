@@ -1,0 +1,116 @@
+{
+  "voices": {
+    "en": [
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (en-US, AvaNeural)",
+        "ShortName": "en-US-AvaNeural",
+        "Gender": "Female",
+        "Locale": "en-US",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft Ava Online (Natural) - English (United States)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["Conversation", "Copilot"],
+          "VoicePersonalities": ["Expressive", "Caring", "Pleasant", "Friendly"]
+        }
+      },
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (en-US, AndrewNeural)",
+        "ShortName": "en-US-AndrewNeural",
+        "Gender": "Male",
+        "Locale": "en-US",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft Andrew Online (Natural) - English (United States)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["Conversation", "Copilot"],
+          "VoicePersonalities": ["Warm", "Confident", "Authentic", "Honest"]
+        }
+      }
+    ],
+    "hk": [
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (zh-HK, HiuGaaiNeural)",
+        "ShortName": "zh-HK-HiuGaaiNeural",
+        "Gender": "Female",
+        "Locale": "zh-HK",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft HiuGaai Online (Natural) - Chinese (Cantonese Traditional)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["General"],
+          "VoicePersonalities": ["Friendly", "Positive"]
+        }
+      },
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (zh-HK, WanLungNeural)",
+        "ShortName": "zh-HK-WanLungNeural",
+        "Gender": "Male",
+        "Locale": "zh-HK",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft WanLung Online (Natural) - Chinese (Hong Kong SAR)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["General"],
+          "VoicePersonalities": ["Friendly", "Positive"]
+        }
+      }
+    ],
+    "ko": [
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (ko-KR, InJoonNeural)",
+        "ShortName": "ko-KR-InJoonNeural",
+        "Gender": "Male",
+        "Locale": "ko-KR",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft InJoon Online (Natural) - Korean (Korea)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["General"],
+          "VoicePersonalities": ["Friendly", "Positive"]
+        }
+      },
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (ko-KR, SunHiNeural)",
+        "ShortName": "ko-KR-SunHiNeural",
+        "Gender": "Female",
+        "Locale": "ko-KR",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft SunHi Online (Natural) - Korean (Korea)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["General"],
+          "VoicePersonalities": ["Friendly", "Positive"]
+        }
+      }
+    ],
+    "jp": [
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (ja-JP, KeitaNeural)",
+        "ShortName": "ja-JP-KeitaNeural",
+        "Gender": "Male",
+        "Locale": "ja-JP",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft Keita Online (Natural) - Japanese (Japan)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["General"],
+          "VoicePersonalities": ["Friendly", "Positive"]
+        }
+      },
+      {
+        "Name": "Microsoft Server Speech Text to Speech Voice (ja-JP, NanamiNeural)",
+        "ShortName": "ja-JP-NanamiNeural",
+        "Gender": "Female",
+        "Locale": "ja-JP",
+        "SuggestedCodec": "audio-24khz-48kbitrate-mono-mp3",
+        "FriendlyName": "Microsoft Nanami Online (Natural) - Japanese (Japan)",
+        "Status": "GA",
+        "VoiceTag": {
+          "ContentCategories": ["General"],
+          "VoicePersonalities": ["Friendly", "Positive"]
+        }
+      }
+    ]
+  }
+}

@@ -8,6 +8,15 @@ const api = {
   },
   loadPic: async (filemane) => {
     return await ipcRenderer.invoke('load-pic', filemane)
+  },
+  getWordsInstance: async () => {
+    return await ipcRenderer.invoke('get-words-instance')
+  },
+  Word_load: async () => {
+    return await ipcRenderer.invoke('Word:load')
+  },
+  readFile: async (filepath: string) => {
+    return await ipcRenderer.invoke('readFile', filepath)
   }
 }
 

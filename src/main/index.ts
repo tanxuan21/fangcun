@@ -3,7 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { LoadPic, SavePic } from './SavePic'
-
+import { Words } from './words'
+import fs from 'fs/promises'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -39,7 +40,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -50,10 +51,22 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // create Obj
+
+  const WordsInstance = new Words()
+  //   await WordsInstance.load()
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
   ipcMain.handle('save-base64-to-file', SavePic)
   ipcMain.handle('load-pic', LoadPic)
+  ipcMain.handle('get-words-instance', () => WordsInstance)
+  ipcMain.handle('Word:load', async () => {
+    await WordsInstance.load()
+  })
+  ipcMain.handle('readFile', async (_event, filepath: string) => {
+    const str = await fs.readFile(filepath, 'utf-8')
+    return str
+  })
   createWindow()
 
   app.on('activate', function () {

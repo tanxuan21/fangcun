@@ -1,4 +1,4 @@
-import { Board } from '.'
+import { Board } from './board'
 
 export default function () {
   // 创建Board对象

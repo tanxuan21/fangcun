@@ -1,0 +1,23 @@
+.line-svg-container {
+  position: absolute;
+  z-index: 20;
+  //   background: #8aa6da35;
+  pointer-events: none;
+
+  .line {
+    pointer-events: none;
+    cursor: pointer;
+    // &:hover {
+    //   filter: drop-shadow(0px 10px 0 rgba(0, 0, 0, 0.5));
+    //   transition: filter 0.3s ease;
+    // }
+  }
+
+  .shadow-line {
+    transition: .3s;
+    pointer-events: none;
+    // stroke-width: 10;
+    stroke: #aaaaaa77;
+    stroke-linecap: round;
+  }
+}

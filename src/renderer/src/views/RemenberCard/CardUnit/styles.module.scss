@@ -1,0 +1,47 @@
+.card-unit-container {
+  width: 50%;
+  height: 70%;
+  position: relative;
+  background: #fff;
+
+  border-radius: 20px;
+  box-shadow: 0 0 20px 0 #4747473e;
+
+  .card-unit-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+
+    .function-button {
+      outline: none;
+      border: none;
+      background: #d4d4d4;
+      padding: 5px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    opacity: 0;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .content {
+    text-align: center;
+    font-size: 30px;
+    outline: none;
+    padding: 10px; // 必须，确保有内容
+  }
+}

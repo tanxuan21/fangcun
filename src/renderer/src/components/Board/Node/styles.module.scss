@@ -1,6 +1,65 @@
-.container {
-  background: #aaa;
-  border: 1px solid;
-  translate: -50% -50%;
+.node-container {
+  background: #fff;
+
   position: absolute;
+  box-shadow: 0 4px 10px 0 #aaaaaa8a;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  &.selected {
+    border: 1px solid #727fe7;
+    box-shadow: 0 4px 10px 0 #3258ff8a;
+  }
+
+  &.selected-main {
+    border: 2px solid #0a6cff;
+    box-shadow: 0 4px 10px 0 #3258ff8a;
+  }
+
+  .node-edge {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    opacity: 0;
+    z-index: 30;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .nail-container {
+    width: 10px;
+    height: 10px;
+    translate: -50% -50%;
+    border-radius: 100px;
+    background: #475cff;
+    box-shadow: 0 0 0 0 #0000;
+    outline: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    cursor: pointer;
+    transition: box-shadow .3s;
+
+    &:hover {
+      box-shadow: 0 0 0 3px #475cff6f;
+      // border: 3px solid #475cff7c;
+      //   background: #000;
+    }
+  }
+
+
+  .content-p {
+    width: 100%;
+    text-align: center;
+    outline: none;
+    border: none;
+    color: #444;
+    user-select: none;
+  }
 }

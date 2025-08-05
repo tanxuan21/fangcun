@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+
+  .word {
+    text-align:
+      center;
+  }
+
+  .phonetic {
+    text-align: center;
+  }
+
+  .interpretation {
+    text-align: center;
+  }
+
+  .button-wapper {
+    display: flex;
+    justify-content: space-around;
+  }
+}

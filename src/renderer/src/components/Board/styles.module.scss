@@ -3,6 +3,7 @@
   height: 100%;
   position: relative;
   overflow: hidden;
+  background: #aaaaaa0a;
 
   .event-layer {
     pointer-events: all;
@@ -11,8 +12,12 @@
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 10;
+  }
 
-
+  .axes-canvas {
+    width: 100%;
+    height: 100%;
   }
 
   .origin {
@@ -22,6 +27,28 @@
     top: 50%;
     left: 50%;
     overflow: visible;
+    z-index: 10;
+
+  }
+
+  .widget-view {
+    pointer-events: none;
+    z-index: 20;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    // background: #f420206a;
+
+    .select-mask {
+      display: none;
+      //   width: 500px;
+      //   height: 350px;
+      //   position: absolute;
+      //   background: #00000023;
+      //   border: 1px solid aaa;
+    }
   }
 }
 
@@ -32,4 +59,16 @@
   position: absolute;
   width: 200px;
   height: 150px;
+}
+
+
+.fill {
+  width: 100%;
+  height: 100%;
+}
+
+.absolute-stak {
+  position: absolute;
+  top: 0;
+  left: 0;
 }

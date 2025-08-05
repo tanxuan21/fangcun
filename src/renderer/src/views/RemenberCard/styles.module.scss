@@ -1,0 +1,124 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e6e6e647;
+  //   padding: 20px;
+  position: relative;
+
+  .menu {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+
+    .menu-item {}
+  }
+
+  .main-wapper {
+    padding: 20px;
+    width: 100%;
+    gap: 10px;
+    flex: 1;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  $handle_size:40px;
+  $hide_transition_time:.3s;
+
+  .footer-handle {
+    position: absolute;
+    left: 50%;
+    bottom: calc(50%);
+    height: $handle_size;
+    width: $handle_size;
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
+    background: #e97f77;
+    cursor: pointer;
+    z-index: 2;
+
+    transition: $hide_transition_time;
+
+    &.footer-handle-hiden {
+      bottom: 0px;
+      background: #e97f776d;
+    }
+  }
+
+  .all-cards-container {
+
+    // flex: 1;
+    &.all-card-container-hidden {
+      //   flex: 0;
+      height: 0%;
+      padding: 0;
+    }
+
+    height: 50%;
+    width: 100%;
+    position: relative;
+    transition: $hide_transition_time;
+    background: #ededed;
+    padding: 25px;
+    overflow: auto;
+    display: grid;
+
+    //   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, 100px);
+    /* 👈 固定列宽 */
+    grid-gap: 10px 20px;
+    grid-auto-rows: 110px;
+    justify-content: start;
+
+    .add-page {
+      background: #ffffff7d;
+      width: 110px;
+      height: 110px;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+      font-size: 60px;
+      color: #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+
+      .add-icon {}
+    }
+
+    $editing_transition_time:.1s;
+
+    .card-preview {
+      transition: $editing_transition_time;
+      width: 110px;
+      height: 110px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px 0 #cccccc68;
+
+      color: #555;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      &.card-preview-editing {
+        border: 2px solid #f5a55b;
+        box-shadow: none;
+        scale: 1.1;
+      }
+    }
+
+
+
+    // background: #000;
+
+
+
+  }
+}
