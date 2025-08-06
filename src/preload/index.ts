@@ -17,6 +17,12 @@ const api = {
   },
   readFile: async (filepath: string) => {
     return await ipcRenderer.invoke('readFile', filepath)
+  },
+  openTerminal: () => {
+    return ipcRenderer.invoke('open-terminal')
+  },
+  fetchAudio: async (text: string, lang: string = 'en') => {
+    return await ipcRenderer.invoke('fetch-audio', text, lang)
   }
 }
 

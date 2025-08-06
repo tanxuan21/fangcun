@@ -5,22 +5,34 @@ import icon from '../../resources/icon.png?asset'
 import { LoadPic, SavePic } from './SavePic'
 import { Words } from './words'
 import fs from 'fs/promises'
+import { createTerminal } from './terminal/terminal'
+import { textToSpeechGoogle } from './fetch_audio'
+
+let mainWindow: null | BrowserWindow = null
+
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
+    title: 'fc',
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      additionalArguments: []
     }
   })
-
+  mainWindow.setMenu(null)
   mainWindow.on('ready-to-show', () => {
+    if (!mainWindow) {
+      console.error('mainWindow null')
+      return
+    }
     mainWindow.show()
+    mainWindow.webContents.openDevTools()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -66,6 +78,13 @@ app.whenReady().then(async () => {
   ipcMain.handle('readFile', async (_event, filepath: string) => {
     const str = await fs.readFile(filepath, 'utf-8')
     return str
+  })
+  ipcMain.handle('open-terminal', () => {
+    createTerminal(mainWindow as BrowserWindow)
+  })
+
+  ipcMain.handle('fetch-audio', (_event, text: string, lang: string) => {
+    return textToSpeechGoogle(text, lang)
   })
   createWindow()
 

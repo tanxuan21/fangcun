@@ -9,7 +9,10 @@ import { useEffect, useRef } from 'react'
 import { WordSkim } from './views/Words/WordSkim'
 import { WordsAPP } from './views/Words'
 import { BoardReact } from './components/Board/index'
-import { RemenberCardTest } from './views/RemenberCard/test'
+import { RemenberCardApp } from './views/RemenberCard/RememberCardApp'
+import { HashRouter } from 'react-router-dom'
+import { Route } from './route/route'
+
 function App(): React.JSX.Element {
   const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
   const APP_REF = useRef<HTMLDivElement | null>(null) // 挂载点引用
@@ -31,8 +34,11 @@ function App(): React.JSX.Element {
       {/* <DrawerMenu></DrawerMenu> */}
       {/* <WordSkim></WordSkim> */}
       {/* <WordsAPP></WordsAPP> */}
-      <RemenberCardTest></RemenberCardTest>
+      {/* <RemenberCardApp></RemenberCardApp> */}
       {/* <BoardReact></BoardReact> */}
+      <HashRouter>
+        <Route></Route>
+      </HashRouter>
     </div>
   )
 }

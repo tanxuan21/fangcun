@@ -12,9 +12,24 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    gap: 20px;
+    gap: 30px;
+    height: 40px;
+    color: #555;
 
-    .menu-item {}
+    .menu-item {
+      cursor: pointer;
+      border-bottom: 1px solid #0000;
+
+      &:hover {
+        border-bottom: 1px solid #555;
+      }
+    }
+
+    .drop-down-menu-label {
+      height: 15px;
+      background: #000;
+      font-size: 8px;
+    }
   }
 
   .main-wapper {
@@ -29,11 +44,13 @@
 
   $handle_size:40px;
   $hide_transition_time:.3s;
+  $footer-height:40%;
+  $item-size:80px;
 
   .footer-handle {
     position: absolute;
     left: 50%;
-    bottom: calc(50%);
+    bottom: $footer-height;
     height: $handle_size;
     width: $handle_size;
     border-top-left-radius: 13px;
@@ -59,7 +76,7 @@
       padding: 0;
     }
 
-    height: 50%;
+    height: $footer-height;
     width: 100%;
     position: relative;
     transition: $hide_transition_time;
@@ -69,16 +86,18 @@
     display: grid;
 
     //   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    grid-template-columns: repeat(auto-fill, 100px);
+    grid-template-columns: repeat(auto-fill, calc($item-size - 10px));
     /* 👈 固定列宽 */
     grid-gap: 10px 20px;
-    grid-auto-rows: 110px;
+    grid-auto-rows: $item-size;
     justify-content: start;
+
+
 
     .add-page {
       background: #ffffff7d;
-      width: 110px;
-      height: 110px;
+      width: $item-size;
+      height: $item-size;
       border-radius: 10px;
       border: 2px solid #ccc;
       font-size: 60px;
@@ -96,8 +115,8 @@
 
     .card-preview {
       transition: $editing_transition_time;
-      width: 110px;
-      height: 110px;
+      width: $item-size;
+      height: $item-size;
       background: #fff;
       border-radius: 10px;
       box-shadow: 0 0 10px 0 #cccccc68;

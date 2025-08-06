@@ -8,6 +8,7 @@ import edge_tts
 import asyncio
 
 
+# 列出所有的可用语音
 async def list_voices():
     voices = await edge_tts.list_voices()
     for voice in voices:
@@ -15,6 +16,8 @@ async def list_voices():
             f"Name: {voice['Name']}, Gender: {voice['Gender']}, Locale: {voice['Locale']}")
     with open('eudic/meta/all-voice.json', 'w', encoding='utf-8')as f:
         json.dump(voices, f, ensure_ascii=False)
+
+# 文本转语音
 
 
 async def text_to_speech(text, output_file, voice="zh-CN-YunxiNeural"):

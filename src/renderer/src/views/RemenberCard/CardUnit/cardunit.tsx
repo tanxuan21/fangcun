@@ -2,11 +2,13 @@ import { useEffect, useRef } from 'react'
 import styles from './styles.module.scss'
 
 interface props {
-  set_content: (c: string) => void
+  set_content?: (c: string) => void
   content: string
+  editable: boolean
+  onClick?: () => void
 }
 
-export function CardUnit({ set_content, content }: props) {
+export function CardUnit({ set_content, content, editable, onClick }: props) {
   const p = useRef<HTMLParagraphElement | null>(null)
 
   // 不能挂在content上
@@ -17,6 +19,7 @@ export function CardUnit({ set_content, content }: props) {
     <div
       className={styles['card-unit-container']}
       onClick={() => {
+        if (onClick) onClick()
         if (p.current) {
           p.current.focus()
         }
@@ -31,11 +34,11 @@ export function CardUnit({ set_content, content }: props) {
       <p
         ref={p}
         className={styles['content']}
-        contentEditable="true"
+        contentEditable={editable ? 'true' : 'false'}
         onInput={(event) => {
           const p_ = event.target as HTMLParagraphElement
           const content = p_.innerHTML
-          set_content(content)
+          if (set_content) set_content(content)
         }}
       ></p>
     </div>

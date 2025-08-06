@@ -10,6 +10,8 @@ declare global {
       getWordsInstance: () => Words
       Word_load: () => Promise<void>
       readFile: (filepath) => Promise<string>
+      openTerminal: () => void
+      fetchAudio: (text: string, lang: string) => Promise<string>
     }
   }
 }
