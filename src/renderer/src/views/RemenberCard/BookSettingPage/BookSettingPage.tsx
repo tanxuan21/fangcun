@@ -1,7 +1,7 @@
 // 设置页
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import styles from './BookSettingPage.module.scss'
-import { Button, Checkbox, Dropdown, Form, InputNumber, Radio, Select } from 'antd'
+import { Button, Checkbox, Dropdown, Form, InputNumber, Radio, Select, Switch } from 'antd'
 import { ItemType } from 'antd/es/menu/interface'
 import { useCardData } from '../CardsData'
 import { BookSettingInterface, DefaultBookSetting } from '../types'
@@ -31,11 +31,26 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
     jp: ['ja-JP-KeitaNeural', 'ja-JP-NanamiNeural']
   }
 
+  // 这个不会引起循环更新。
   useEffect(() => {
-    if (setting_page_state === 'hide') {
-      set_setting_cache(setting)
+    set_setting_cache(setting)
+    // console.log(setting)
+  }, [setting, set_setting_page_state])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      console.log(e)
+
+      if (e.key === 'Escape') {
+        set_setting_page_state('hide')
+      }
     }
-  }, [setting_page_state])
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
   return (
     <div
       className={`${styles['setting-container']} ${setting_page_state === 'hide' && styles['hide']}`}
@@ -44,10 +59,9 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
         <Form className={styles['form-container']}>
           <Form.Item label="audio model">
             <Select
-              value={setting_cache.audio_model || 'no audio'}
+              value={setting_cache.audio_model}
               onChange={(v) => {
                 set_setting_cache({ ...setting_cache, audio_model: v })
-                console.log(v)
               }}
               options={(function () {
                 const items: { value: string; label: React.ReactNode }[] = []
@@ -97,7 +111,14 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
               value={setting_cache.forget_review_count}
             ></InputNumber>
           </Form.Item>
-
+          <Form.Item label="record maner">
+            <Switch
+              value={setting_cache.arrange_review}
+              onChange={(v) => {
+                set_setting_cache({ ...setting_cache, arrange_review: v })
+              }}
+            ></Switch>
+          </Form.Item>
           {setting_cache.memory_level.map((item) => {
             return (
               <Form.Item key={item.level} label={`level: ${item.level > 0 ? item.level : '∞'}`}>
@@ -113,7 +134,7 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
                     }}
                     value={item.review_delay}
                   ></InputNumber>{' '}
-                  天后复习
+                  review after days
                   {/* 无穷的那个不能删 */}
                   {item.level > 0 && (
                     <div className={styles['memory-level-edit-btn-wrapper']}>
@@ -186,16 +207,23 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
           })}
         </Form>
         <footer className={styles['btn-group']}>
+          {/* 恢复默认设置 */}
           <Button
             color="danger"
             variant="filled"
-            onClick={() => {
-              set_setting_page_state('hide')
-              set_setting(DefaultBookSetting)
+            onClick={async () => {
+              const resp = await updateBookInfo({ id: book_id, setting: DefaultBookSetting })
+              if (resp.success) {
+                set_setting_page_state('hide')
+                set_setting(DefaultBookSetting) // 将缓存区写入正式配置
+              } else {
+                console.error('保存错误')
+              }
             }}
           >
             restore
           </Button>
+          {/* 放弃设置，只是退出罢了 */}
           <Button
             onClick={() => {
               set_setting_page_state('hide')
@@ -208,8 +236,7 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
             variant="solid"
             onClick={async () => {
               // 成功，退出设置页。
-
-              const resp = await updateBookInfo({ id: book_id, setting })
+              const resp = await updateBookInfo({ id: book_id, setting: setting_cache })
               if (resp.success) {
                 set_setting_page_state('hide')
                 set_setting(setting_cache) // 将缓存区写入正式配置

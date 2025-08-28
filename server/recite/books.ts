@@ -98,6 +98,10 @@ class ReciteBooksDatabase {
   // 更新本子信息，想更新啥更新啥。
   update_book_info(book_id: number, updates) {
     const update_allow_feilds = ['name', 'description', 'setting']
+    // 将updates的每一个元素搞成string
+    for (const key in updates) {
+      updates[key] = JSON.stringify(updates[key])
+    }
     this.db
       .prepare(
         `

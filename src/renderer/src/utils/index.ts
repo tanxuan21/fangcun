@@ -16,7 +16,7 @@ export function shuffleArray<T>(arr: T[]): void {
 
 export function alignConfig(defaultConfig: any, userConfig: any): any {
   if (typeof defaultConfig !== 'object' || defaultConfig === null) {
-    return defaultConfig // primitive or null
+    return typeof userConfig !== 'object' ? userConfig : defaultConfig // primitive or null
   }
   if (Array.isArray(defaultConfig)) {
     // 默认使用“覆盖”策略：如果用户提供的是数组，则用用户的；否则用默认
