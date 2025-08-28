@@ -9,7 +9,7 @@ export interface BookInterface {
 export interface BookSettingInterface {
   audio_model: string // 允许不填，不填代表不使用发音
   review_mode: {
-    mode_name: string
+    mode_name: BookReciteModeName
     mode_id: number // 用于存数据库的type字段
     open: boolean
   }[]
@@ -22,6 +22,8 @@ export interface BookSettingInterface {
 
   arrange_review: boolean // 随便翻翻还是记录用户行为
 }
+
+export type BookReciteModeName = 'read' | 'write' | 'listen' | 'record'
 export const DefaultBookSetting: BookSettingInterface = {
   audio_model: '',
   review_mode: [
@@ -59,5 +61,3 @@ export const DefaultBookSetting: BookSettingInterface = {
 
   arrange_review: false // 随便翻翻还是记录用户行为
 }
-
-// 因为很可能未来对setting有添加或者其他改动。所以需要：进行一个检查

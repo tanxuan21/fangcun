@@ -34,13 +34,10 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
   // 这个不会引起循环更新。
   useEffect(() => {
     set_setting_cache(setting)
-    // console.log(setting)
   }, [setting, set_setting_page_state])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      console.log(e)
-
       if (e.key === 'Escape') {
         set_setting_page_state('hide')
       }

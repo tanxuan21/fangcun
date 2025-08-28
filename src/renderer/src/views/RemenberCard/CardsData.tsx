@@ -41,7 +41,6 @@ export const CardsDataProvider = ({
       // 获取书的配置
       const book = (await get_book_by_book_id(book_id)).data
       const book_setting = alignConfig(DefaultBookSetting, JSON.parse(book.setting))
-      console.log(book_setting)
       set_setting(book_setting)
     })()
   }, [book_id])

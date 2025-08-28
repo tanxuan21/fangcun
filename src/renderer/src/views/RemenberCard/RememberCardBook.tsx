@@ -7,7 +7,6 @@ import {
   add_card,
   delete_card,
   get_card_review,
-  get_cards_by_book_id,
   update_card,
   update_card_review
 } from './api/cards'
@@ -15,11 +14,10 @@ import { CardDataType, CardsDataProvider, useCardData } from './CardsData'
 
 import { EditableFeild } from './EditableFeild'
 import { Audio } from '../../components/Audio/Audio'
-import { EdgeTTS } from 'edge-tts-universal'
 import { getTodayDate, shuffleArray } from '@renderer/utils'
 import { BookSettingPage, BookSettingPageAPI } from './BookSettingPage/BookSettingPage'
+import { BookReciteModeName } from './types'
 
-interface ReciteCardBookConfig {}
 // 基础布局组件
 const Layout = ({ card, cards_list }) => {
   const [expand, set_expand] = useState<boolean>(true)
@@ -62,9 +60,6 @@ const CardListItem = ({
     </div>
   )
 }
-
-// 配置
-const ConfigPage = () => {}
 
 // 记录组件
 const RecordMain = () => {
@@ -966,108 +961,90 @@ const ReciteReverse = () => {
   return <Layout card={card()} cards_list={cards_list()}></Layout>
 }
 
-// app主体
-export const RememberCardBooks = () => {
-  const { book_id } = useParams<{ book_id: string }>()
-  const [mode, set_mode] = useState<'Record' | 'Recite' | 'Dictation' | 'ReciteReverse'>('Recite')
+const RememberCardBooksInner = () => {
+  const { book_id } = useCardData()
+  const [mode, set_mode] = useState<BookReciteModeName>('record')
+  const ReciteMode2Component: { [key: string]: React.ReactNode } = {
+    record: <RecordMain />,
+    write: <ReciteReverse />,
+    read: <ReciteMain />,
+    listen: <DictationMain />
+  }
   const nav = useNavigate()
   const BookSettingPageRef = useRef<BookSettingPageAPI>(null)
   return (
     <div className={styles['remember-card-app-container']}>
-      <CardsDataProvider book_id={parseInt(book_id as string)}>
-        <header>
-          <Icon
-            IconName="#icon-zhankai"
-            style={{ rotate: '90deg' }}
-            className={styles['icon']}
-            onClick={() => {
-              nav(-1)
-            }}
-          ></Icon>
-          <span>{mode} Mode</span>
+      <header>
+        <Icon
+          IconName="#icon-zhankai"
+          style={{ rotate: '90deg' }}
+          className={styles['icon']}
+          onClick={() => {
+            nav(-1)
+          }}
+        ></Icon>
+        <span>{mode} Mode</span>
 
-          <div className={styles['header-icon-group']}>
-            {/* 修改模式 */}
-            <Dropdown
-              trigger={['click']}
-              menu={{
-                items: [
+        <div className={styles['header-icon-group']}>
+          {/* 修改模式 */}
+          <Dropdown
+            trigger={['click']}
+            menu={{
+              items: (function () {
+                const { setting } = useCardData()
+                const items = [
                   {
-                    key: 1,
-                    label: '录入',
+                    key: -1,
+                    label: 'record',
                     onClick: () => {
-                      set_mode('Record')
+                      set_mode('record')
                     }
-                  },
-                  {
-                    key: 2,
-                    label: '读',
-                    onClick: () => {
-                      set_mode('Recite')
-                    }
-                  },
-                  {
-                    key: 4,
-                    label: '写',
-                    onClick: () => {
-                      set_mode('ReciteReverse')
-                    }
-                  },
-                  {
-                    key: 3,
-                    label: '听',
-                    onClick: () => {
-                      set_mode('Dictation')
-                    }
-                  },
-                  {
-                    key: 5,
-                    label: '说（敬请期待）',
-                    onClick: () => {
-                      set_mode('Dictation')
-                    },
-                    disabled: true
                   }
                 ]
-              }}
-            >
-              {/* 必须套一层，否则dropdown会出问题 */}
-              <span className={styles['icon']}>
-                <Icon IconName="#icon-fenjifenlei"></Icon>
-              </span>
-            </Dropdown>
-            <Icon
-              onClick={() => {
-                BookSettingPageRef.current?.pop()
-              }}
-              className={styles['icon']}
-              IconName="#icon-shezhi"
-            ></Icon>
-          </div>
-        </header>
+                setting.review_mode.forEach((rm) => {
+                  if (rm.open) {
+                    items.push({
+                      key: rm.mode_id,
+                      label: rm.mode_name,
+                      onClick: () => {
+                        set_mode(rm.mode_name)
+                      }
+                    })
+                  }
+                })
+                return items
+              })()
+            }}
+          >
+            {/* 必须套一层，否则dropdown会出问题 */}
+            <span className={styles['icon']}>
+              <Icon IconName="#icon-fenjifenlei"></Icon>
+            </span>
+          </Dropdown>
+          <Icon
+            onClick={() => {
+              BookSettingPageRef.current?.pop()
+            }}
+            className={styles['icon']}
+            IconName="#icon-shezhi"
+          ></Icon>
+        </div>
+      </header>
 
-        <main>
-          {(function () {
-            switch (mode) {
-              case 'Record': {
-                return <RecordMain />
-              }
-              case 'Recite': {
-                return <ReciteMain />
-              }
-              case 'Dictation': {
-                return <DictationMain />
-              }
-              case 'ReciteReverse': {
-                return <ReciteReverse></ReciteReverse>
-              }
-            }
-          })()}
-        </main>
-        <footer>book_id:{book_id}</footer>
+      <main>{ReciteMode2Component[mode]}</main>
+      <footer>book_id:{book_id}</footer>
 
-        <BookSettingPage ref={BookSettingPageRef}></BookSettingPage>
-      </CardsDataProvider>
+      <BookSettingPage ref={BookSettingPageRef}></BookSettingPage>
     </div>
+  )
+}
+
+// app主体
+export const RememberCardBooks = () => {
+  const { book_id } = useParams<{ book_id: string }>()
+  return (
+    <CardsDataProvider book_id={parseInt(book_id as string)}>
+      <RememberCardBooksInner />
+    </CardsDataProvider>
   )
 }
