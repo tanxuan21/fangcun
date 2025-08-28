@@ -66,9 +66,23 @@ class LanguageVoiceDatabase:
             audio BLOB NOT NULL,
             A TEXT NOT NULL,
             date DATE NOT NULL,
-            language TEXT NOT NULL
+            language TEXT NOT NULL,
+            remember_state BLOB NOT NULL
         )
         ''')
+        self.conn.commit()
+        # 两个记录table
+        '''
+        remember_state 记录最原始的记忆属性，以每天为单位。以时间为顺序，记录下 
+            记得，模糊，忘记
+        三个选项的序列
+        '''
+        self.cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.db_name}(\
+            id INTEGER PRIMARY KEY AUTOINCREMENT,\
+            language TEXT NOT NULL,\
+            date DATE NOT NULL,\
+            name TEXT\
+            )")
         self.conn.commit()
 
     def insert_word(self, Q: str, A: str, language: str, audio_file_path: str):
@@ -103,6 +117,10 @@ class LanguageVoiceDatabase:
         if res:
             return dict(res)
         return None
+
+    def save_a_day_words(self, language: str, name: str):
+        # self.cursor.execute('')
+        pass
 
 
 db = LanguageVoiceDatabase('eudic/languageaudio.db')

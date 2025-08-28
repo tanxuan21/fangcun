@@ -1,0 +1,76 @@
+  .setting-container {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(5px);
+    z-index: 20;
+    background: #a2a2a20b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.hide {
+      display: none;
+    }
+
+    &>.setting-inner-container {
+      display: flex;
+      flex-direction: column;
+      width: 80%;
+      padding: 50px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #aaaaaa78;
+      background: #fff;
+      height: 80%;
+      justify-content: space-between;
+
+      &>.form-container {
+        overflow: auto;
+
+        & .form-item-inner-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+
+          & .memory-level-edit-btn-wrapper {
+            display: flex;
+            gap: 5px;
+            font-size: 17px;
+            color: #aaa;
+
+            &>.icon-tianjia {
+              padding: 4px;
+              border-radius: 4px;
+              transition: .2s;
+
+              &:hover {
+                background: #ccc;
+              }
+            }
+
+            &>.icon-shanchu {
+              color: rgba(232, 41, 24, 0.424);
+              padding: 4px;
+              border-radius: 4px;
+              transition: .2s;
+
+              &:hover {
+                background: rgba(216, 75, 63, 0.9);
+                color: #fff;
+              }
+            }
+
+          }
+        }
+      }
+
+      &>.btn-group {
+        display: flex;
+        padding: 20px;
+        padding-bottom: 0;
+        align-items: center;
+        justify-content: space-around;
+        width: 100%;
+      }
+    }
+
+  }

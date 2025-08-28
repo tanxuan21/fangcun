@@ -1,7 +1,9 @@
+import { BoardReact } from '@renderer/components/Board'
 import { NotFound } from '@renderer/components/NotFound/notfound'
+import { Table } from '@renderer/components/Table/Table'
 import { Home } from '@renderer/views/Home/home'
+import { RememberCardBooks } from '@renderer/views/RemenberCard/RememberCardBook'
 import { RemenberCardApp } from '@renderer/views/RemenberCard/RememberCardApp'
-import { RemenberCardContent } from '@renderer/views/RemenberCard/remenbercard'
 import { RouteObject, useRoutes } from 'react-router-dom'
 
 export const route: RouteObject[] = [
@@ -15,8 +17,16 @@ export const route: RouteObject[] = [
     element: <RemenberCardApp></RemenberCardApp>
   },
   {
-    path: '/app/remember-card/content',
-    element: <RemenberCardContent></RemenberCardContent>
+    path: '/app/remember-card/:book_id',
+    element: <RememberCardBooks></RememberCardBooks>
+  },
+  {
+    path: '/app/board/',
+    element: <BoardReact />
+  },
+  {
+    path: '/app/table',
+    element: <Table></Table>
   }
 ]
 

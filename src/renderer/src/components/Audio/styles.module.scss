@@ -1,0 +1,29 @@
+.audio-container {
+  margin: 20px;
+
+  &>.audio-icon {
+    font-size: 33px;
+    border-radius: 100px;
+    transition: .2s;
+    color: #999;
+
+    &:hover {
+      background-color: #dbdbdbc6;
+    }
+  }
+
+  &>.audio-loading {
+    opacity: .3;
+    background-color: #99999997;
+    border-radius: 5px;
+
+    &:hover {
+      background-color: #99999997;
+    }
+  }
+
+  &>.audio-disable {}
+
+  &>.audio-play {}
+
+}

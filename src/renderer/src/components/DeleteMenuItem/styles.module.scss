@@ -1,0 +1,13 @@
+.delete-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cf3219;
+  transition: .2s;
+  border-radius: 3px;
+  width: 100px;
+
+  &:hover {
+    background: #cf311941;
+  }
+}

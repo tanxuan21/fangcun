@@ -47,3 +47,23 @@ rules: {
 ## scss
 
 ## router
+
+
+# 数据库
+
+添加字段
+
+```shell
+sqlite 'path-to-database'
+
+alter table 'table-name'
+add colum setting text not null default "";
+```
+
+改名
+
+```json
+ALTER TABLE old_table_name
+RENAME TO new_table_name;
+```
+

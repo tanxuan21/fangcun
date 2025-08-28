@@ -1,143 +1,530 @@
-.container {
+@use './config.scss';
+
+
+$remember-green:#0bae6f;
+$vague-orange:#f0df24;
+$forget-red:#e03213;
+
+.books-container {
+
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  background-color: #F8F9FA;
+  height: 100%;
+  width: 100%;
+
+  .books-container-header {
+    height: 50px;
+    // background-color: #f1f1f1;
+    width: 100%;
+    border-bottom: 1px solid #cccccc57;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    padding: 0 20px;
+
+    .add-book-icon {
+      font-size: 30px;
+      color: #888;
+      transition: .3s;
+      border-radius: 20px;
+
+      &:hover {
+        cursor: pointer;
+        color: #fff;
+        background: #999;
+      }
+    }
+  }
+
+  .new-book-csv-uploader {
+    width: 100%;
+    height: 100%;
+    transition: .3s;
+  }
+
+  .new-book-csv-uploader-dropover {
+    filter: blur(5px);
+    background: #bcbcbc22;
+  }
+
+  .book-items-wapper {
+
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    grid-auto-rows: 170px;
+
+    .book-csv-uploader {}
+
+    .book-csv-uploader-dropover {
+      filter: blur(5px);
+      background: #bcbcbc22;
+    }
+
+    .book {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 10px;
+      padding: 26px;
+      color: #444;
+
+      .book-name {
+        font-size: 24px;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        //   border-bottom: 1px solid #888;
+      }
+
+      .book-description {
+        font-size: 13px;
+        color: #888;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .book-created-at {
+        //   text-align: right;
+        font-size: 10px;
+        color: #bbb;
+      }
+
+      .book-updated-at {
+        //   text-align: right;
+        font-size: 10px;
+        color: #bbb;
+      }
+    }
+  }
+
+
+  .books-container-footer {
+    height: 20px;
+  }
+
+
+}
+
+.remember-card-app-container {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #e6e6e647;
-  //   padding: 20px;
+  justify-content: space-between;
+  background: #aaaaaa24;
+  color: #555;
   position: relative;
+  $bar-background: #f9f9f9;
 
-  .menu {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 30px;
+  &>header {
     height: 40px;
-    color: #555;
+    flex: 0 0 auto;
+    width: 100%;
+    background: $bar-background;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    justify-content: space-between;
 
-    .menu-item {
-      cursor: pointer;
-      border-bottom: 1px solid #0000;
+    & .header-icon-group {
+      display: flex;
+      justify-content: space-around;
+      gap: 5px;
+      align-items: center;
+    }
+
+    & .icon {
+      font-size: 25px;
+      color: #888;
+
+      border-radius: 5px;
 
       &:hover {
-        border-bottom: 1px solid #555;
-      }
-    }
+        background: #aaaaaa45;
 
-    .drop-down-menu-label {
-      height: 15px;
-      background: #000;
-      font-size: 8px;
+      }
     }
   }
 
-  .main-wapper {
-    padding: 20px;
+  &>main {
     width: 100%;
-    gap: 10px;
-    flex: 1;
+    flex: 1 1 auto;
+    height: 100%;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
   }
 
-  $handle_size:40px;
-  $hide_transition_time:.3s;
-  $footer-height:40%;
-  $item-size:80px;
-
-  .footer-handle {
-    position: absolute;
-    left: 50%;
-    bottom: $footer-height;
-    height: $handle_size;
-    width: $handle_size;
-    border-top-left-radius: 13px;
-    border-top-right-radius: 13px;
-    background: #e97f77;
-    cursor: pointer;
-    z-index: 2;
-
-    transition: $hide_transition_time;
-
-    &.footer-handle-hiden {
-      bottom: 0px;
-      background: #e97f776d;
-    }
-  }
-
-  .all-cards-container {
-
-    // flex: 1;
-    &.all-card-container-hidden {
-      //   flex: 0;
-      height: 0%;
-      padding: 0;
-    }
-
-    height: $footer-height;
+  &>footer {
+    flex: 0 0 auto;
+    height: 30px;
+    background-color: $bar-background;
     width: 100%;
+  }
+
+
+
+  .main-wrapper {
+    width: 100%;
+    height: 60%;
+    flex: 2; // 让 main-wrapper 可以吃掉剩下的空间
+  }
+
+  .drawer-wrapper {
+    width: 100%;
+    flex: 0;
+    height: 0;
     position: relative;
-    transition: $hide_transition_time;
-    background: #ededed;
-    padding: 25px;
-    overflow: auto;
-    display: grid;
-
-    //   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    grid-template-columns: repeat(auto-fill, calc($item-size - 10px));
-    /* 👈 固定列宽 */
-    grid-gap: 10px 20px;
-    grid-auto-rows: $item-size;
-    justify-content: start;
+    transition: .3s;
 
 
+    border-top: #0000;
 
-    .add-page {
-      background: #ffffff7d;
-      width: $item-size;
-      height: $item-size;
-      border-radius: 10px;
-      border: 2px solid #ccc;
-      font-size: 60px;
-      color: #ccc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-
-      .add-icon {}
+    &.drawer-wrapper-expand {
+      flex: 1;
+      border-top: 2px solid #cacaca;
     }
 
-    $editing_transition_time:.1s;
+    &>.cards-container {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: #e4e8eb;
 
-    .card-preview {
-      transition: $editing_transition_time;
-      width: $item-size;
-      height: $item-size;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px 0 #cccccc68;
+    }
 
-      color: #555;
+    &>.drawer-handle {
+      $handle-height-default: 30px;
+      $handle-height-stretch: 40px;
+      $handle-height-shrink: 10px;
+      $handle-color: #da4949;
+      width: $handle-height-default;
+      cursor: pointer;
+      background: fade-out($handle-color, .7);
+      position: absolute;
+      left: 50%;
+
+      translate: -50% 0;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      z-index: 20;
+      transition: .2s;
+
+      height: $handle-height-shrink;
+      top: -$handle-height-shrink;
+
+      &.drawer-handle-expand {
+        top: -$handle-height-default;
+        height: $handle-height-default;
+
+      }
+
+      &:hover {
+        height: $handle-height-stretch;
+        top: -$handle-height-stretch;
+        background: $handle-color;
+      }
+
+    }
+  }
+}
+
+@mixin card() {
+  background: #fff;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px 0 #cccccc60;
+  max-height: 450px;
+  min-height: 100px;
+  min-width: 100px;
+  max-width: 650px;
+  font-size: var(--recite-card-font-size);
+  padding: 30px;
+}
+
+// 包裹器
+.record-main-wrapper {
+  display: flex;
+  padding: 50px;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+
+
+
+
+  // 问答卡片
+  &>.q {
+    &>.edite-feild {
+      font-size: var(--recite-card-font-size);
+    }
+
+    @include card();
+  }
+
+  &>.a {
+    &>.edite-feild {
+      font-size: var(--recite-card-font-size);
+    }
+
+    @include card();
+  }
+}
+
+
+
+// 子组件内部wrapper，包裹card_item
+@mixin drawer-wrapper() {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(67px, 1fr));
+  gap: 20px;
+  grid-auto-rows: 70px;
+}
+
+// 卡片
+.card-list-item {
+  width: 80px;
+  height: 80px;
+  background: #fff;
+  border-radius: 10px;
+
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+
+  font-size: var(--recite-card-list-font-size);
+  padding: 10px;
+  transition: .2s;
+
+  position: relative;
+
+  &>p {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+}
+
+.card-list-item-active {
+  border: 2px solid #ee903e;
+  box-shadow: 0 0 6px 0 fade-out(#ee903e, .7);
+  scale: 1.1;
+}
+
+.record-drawer-wrapper {
+  @include drawer-wrapper();
+
+  &>.record-cards-list-add {
+    padding: 0;
+    width: 70px;
+    font-size: 50px;
+    color: #aaa;
+    border: 2px dashed #aaa;
+
+    background-color: #ffffff5a;
+
+  }
+}
+
+.recite-drawer-wrapper {
+  @include drawer-wrapper();
+
+  .cards-list-item-review-state-container {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    padding: 5px;
+
+
+    &>.review-label {
+
+      $review-label-size: 14px;
+      color: #666;
+      font-size: 8px;
+      padding: 3px;
+
+      margin: 1px;
+      display: block;
+      width: $review-label-size;
+      height: $review-label-size;
+      border-radius: 5px;
       display: flex;
       justify-content: center;
       align-items: center;
 
-      &.card-preview-editing {
-        border: 2px solid #f5a55b;
-        box-shadow: none;
-        scale: 1.1;
+      $review-count-bg-fade: .7;
+
+      &.remember-count-label {
+        background: fade-out($remember-green, $review-count-bg-fade);
+
+      }
+
+      &.vague-count-label {
+        background: fade-out($vague-orange, $review-count-bg-fade);
+
+      }
+
+      &.forget-count-label {
+        background: fade-out($forget-red, $review-count-bg-fade);
+
+      }
+    }
+  }
+}
+
+
+
+.recite-main-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .recite-main-card-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 50px;
+
+    &>.q {
+      @include card();
+    }
+
+    &>.a-wrapper {
+      position: absolute;
+      transition: .3s;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 50px;
+      align-items: center;
+
+      &>.a {
+        @include card();
+
+
       }
     }
 
-
-
-    // background: #000;
-
-
-
   }
+
+  .recite-button-wrapper {
+    height: 90px;
+    width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-start;
+    padding: 0 70px;
+    justify-content: space-around;
+
+    @mixin recite-button {
+      outline: none;
+      padding: 10px;
+      border: none;
+      background: #0000;
+      cursor: pointer;
+      position: relative;
+    }
+
+    @mixin button-after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30%;
+      height: 3px;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    &>.remember-button {
+      @include recite-button();
+
+      &::after {
+        @include button-after();
+        background: $remember-green;
+      }
+
+      &:hover::after {
+        width: 80%;
+      }
+
+    }
+
+    &>.vague-button {
+      @include recite-button();
+
+      &::after {
+        @include button-after();
+        background: $vague-orange;
+      }
+
+      &:hover::after {
+        width: 80%;
+      }
+    }
+
+    &>.forget-button {
+      @include recite-button();
+
+      &::after {
+        @include button-after();
+        background: $forget-red;
+      }
+
+      &:hover::after {
+        width: 80%;
+      }
+    }
+
+    &>.show-answer-button {
+      @include recite-button();
+
+      &::after {
+        @include button-after();
+        background: #bbb;
+      }
+
+      &:hover::after {
+        width: 80%;
+      }
+    }
+  }
+}
+
+
+
+.delete-menu-item {
+  color: #ce3112;
+  transition: .2s;
+  display: flex;
+
+  justify-content: space-around;
+  align-items: center;
 }
