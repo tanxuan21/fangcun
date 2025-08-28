@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './styles.module.scss'
-import { Icon } from '../../components/Icon/index'
+import { Icon, IconTail } from '../../components/Icon/index'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import { Dropdown, message } from 'antd'
 import {
@@ -975,14 +975,14 @@ const RememberCardBooksInner = () => {
   return (
     <div className={styles['remember-card-app-container']}>
       <header>
-        <Icon
+        <IconTail
           IconName="#icon-zhankai"
           style={{ rotate: '90deg' }}
           className={styles['icon']}
           onClick={() => {
             nav(-1)
           }}
-        ></Icon>
+        ></IconTail>
         <span>{mode} Mode</span>
 
         <div className={styles['header-icon-group']}>
@@ -1018,16 +1018,16 @@ const RememberCardBooksInner = () => {
           >
             {/* 必须套一层，否则dropdown会出问题 */}
             <span className={styles['icon']}>
-              <Icon IconName="#icon-fenjifenlei"></Icon>
+              <IconTail IconName="#icon-fenjifenlei"></IconTail>
             </span>
           </Dropdown>
-          <Icon
+          <IconTail
             onClick={() => {
               BookSettingPageRef.current?.pop()
             }}
             className={styles['icon']}
             IconName="#icon-shezhi"
-          ></Icon>
+          ></IconTail>
         </div>
       </header>
 

@@ -3,7 +3,7 @@ import styles from './styles.module.scss'
 import { EditableText } from '../../components/EditableText/EditableText'
 import { BookInterface, DefaultBookSetting } from './types'
 import { addBook, deleteBook, get_all_books, updateBookInfo } from './api/books'
-import { Icon } from '@renderer/components/Icon'
+import { Icon, IconTail } from '@renderer/components/Icon'
 import { Dropdown, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { CSVUploader } from '@renderer/components/CSVUploader/CSVUploader'
@@ -115,7 +115,7 @@ export function RemenberCardApp() {
   return (
     <div className={styles['books-container']}>
       <header className={styles['books-container-header']}>
-        <Icon
+        <IconTail
           onClick={async () => {
             const resp = await addBook()
             console.log(resp)
@@ -138,7 +138,7 @@ export function RemenberCardApp() {
           }}
           IconName="#icon-jia"
           className={styles['add-book-icon']}
-        ></Icon>
+        ></IconTail>
       </header>
 
       <CSVUploader

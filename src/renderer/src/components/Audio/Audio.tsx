@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { EdgeTTS } from 'edge-tts-universal'
-import { Icon } from '@renderer/components/Icon'
+import { Icon, IconTail } from '@renderer/components/Icon'
 import styles from './styles.module.scss'
 import { message } from 'antd'
 
@@ -52,7 +52,7 @@ export const Audio = forwardRef(
     return (
       <div className={`${styles['audio-container']} ${className}`} style={style}>
         {contextHolder}
-        <Icon
+        <IconTail
           onClick={() => {
             const audio = audioRef.current
             if (!audio) return
@@ -61,7 +61,7 @@ export const Audio = forwardRef(
           }}
           className={`${styles['audio-icon']} ${isLoading && styles['audio-loading']} `}
           IconName="#icon-shengyin"
-        ></Icon>
+        ></IconTail>
         <audio autoPlay={autoPlay} ref={audioRef} src={audioUrl ?? undefined} controls={false} />
       </div>
     )

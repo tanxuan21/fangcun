@@ -25,7 +25,8 @@ $forget-red:#e03213;
     padding: 0 20px;
 
     .add-book-icon {
-      font-size: 30px;
+      font-size: 21px;
+      padding: 5px;
       color: #888;
       transition: .3s;
       border-radius: 20px;
@@ -142,9 +143,9 @@ $forget-red:#e03213;
     }
 
     & .icon {
-      font-size: 25px;
+      font-size: 20px;
       color: #888;
-
+      padding: 5px;
       border-radius: 5px;
 
       &:hover {
@@ -337,7 +338,7 @@ $forget-red:#e03213;
   &>.record-cards-list-add {
     padding: 0;
     width: 70px;
-    font-size: 50px;
+    font-size: 30px;
     color: #aaa;
     border: 2px dashed #aaa;
 
