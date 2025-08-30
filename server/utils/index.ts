@@ -34,7 +34,7 @@ export const makeSuccessRep = (resp: Response, data?: any) => {
 export const HTTP_422_check = (body, feild: string[]) => {
   try {
     for (const i in feild) {
-      if (!body[feild[i]]) {
+      if (body[feild[i]] === undefined) {
         return false
       }
     }

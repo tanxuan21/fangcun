@@ -1,9 +1,9 @@
 @use './config.scss';
 
 
-$remember-green:#0bae6f;
-$vague-orange:#f0df24;
-$forget-red:#e03213;
+$remember-green:rgb(11, 173, 111);
+$vague-orange:rgb(240, 223, 36);
+$forget-red:rgb(224, 50, 19);
 
 .books-container {
 
@@ -238,6 +238,12 @@ $forget-red:#e03213;
   }
 }
 
+.progress-points-class {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
 @mixin card() {
   background: #fff;
   width: 100%;
@@ -253,6 +259,7 @@ $forget-red:#e03213;
   max-width: 650px;
   font-size: var(--recite-card-font-size);
   padding: 30px;
+  position: relative;
 }
 
 // 包裹器
@@ -300,12 +307,15 @@ $forget-red:#e03213;
   grid-auto-rows: 70px;
 }
 
+$card-list-item-border-radius:10px; // card-list-item 的 圆角
+$card-list-item-active-border:2px; // card-list-item 的 激活边框。
+
 // 卡片
 .card-list-item {
   width: 80px;
   height: 80px;
   background: #fff;
-  border-radius: 10px;
+  border-radius: $card-list-item-border-radius;
 
   display: flex;
   cursor: pointer;
@@ -327,7 +337,7 @@ $forget-red:#e03213;
 }
 
 .card-list-item-active {
-  border: 2px solid #ee903e;
+  outline: $card-list-item-active-border solid #ee903e;
   box-shadow: 0 0 6px 0 fade-out(#ee903e, .7);
   scale: 1.1;
 }
@@ -350,13 +360,34 @@ $forget-red:#e03213;
 .recite-drawer-wrapper {
   @include drawer-wrapper();
 
+  .cards-list-item-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: $card-list-item-border-radius;
+
+    &.no-review-today {
+      background: #00000010;
+    }
+
+    &.review-done {
+      &>.icon-qveren {
+        font-size: 15px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: $remember-green;
+        translate: 25% -25%;
+      }
+    }
+  }
+
   .cards-list-item-review-state-container {
     position: absolute;
     inset: 0;
 
     display: flex;
     padding: 5px;
-
 
     &>.review-label {
 

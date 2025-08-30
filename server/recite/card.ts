@@ -71,6 +71,24 @@ interface UpdateReviewRecordParams {
   review_at: number
 }
 
+interface UserReviewRecord {
+  id: number
+  remember: number
+  vague: number
+  forget: number
+  card_id: number
+  review_at: string
+  type: number
+}
+
+interface UserReviewArrangement {
+  id: number
+  card_id: number
+  type: number
+  level: number
+  review_date: string
+}
+
 class ReciteCardsDatabase {
   private readonly db: Database.Database
   //   private readonly db_name = 'cards_temp'
@@ -217,10 +235,17 @@ class ReciteCardsDatabase {
       )
       .all(book_id)
   }
-  // 卡片今天完成复习
-  // TODO 我觉得这个让前端来更新比较好。前端它不必来来回回的读数据。如果硬要在后端更新review日期，那么会面临要读book表的问题。这不好，这会破坏class的封装
 
-  finished_review(card_id: number, review_type: number,next_review_date:string) {
+  // 卡片今天完成复习
+  // 我觉得这个让前端来更新比较好。前端它不必来来回回的读数据。如果硬要在后端更新review日期，那么会面临要读book表的问题。这不好，这会破坏class的封装
+  // 如果前端选择了不更新记忆数据，那就不要调用这个方法
+  finished_review(
+    card_id: number,
+    review_type: number,
+    next_review_date: string,
+    level: number,
+    control: number
+  ) {
     // 写入card的review_at字段，标识今天的复习结束
     this.db
       .prepare(
@@ -231,13 +256,29 @@ class ReciteCardsDatabase {
         `
       )
       .run(card_id)
-    // TODO
-    // 写入下次复习安排
+    // 不存在则创建
+    this.db
+      .prepare(
+        `
+        INSERT OR REPLACE INTO ${this.card_review_arrangment_table_name}
+        (card_id,type,review_date,level) VALUES (?,?,?,?)`
+      )
+      .run(card_id, review_type, next_review_date, level)
   }
 
-  // TODO review_record 添加review 类型字段。每对卡片都有好几种类型的复习方式。
+  // 获取卡片的复习安排
+  get_review_arrangement(card_id: number, review_type: number) {
+    return this.db
+      .prepare(
+        `SELECT * FROM "${this.card_review_arrangment_table_name}"
+        WHERE card_id = ? AND type = ?
+        `
+      )
+      .all(card_id, review_type) as UserReviewArrangement[]
+  }
+
   // 添加复习记录，用户行为
-  add_review_record(card_id: number, type: MemoryType) {
+  add_review_record(card_id: number, memory_type: MemoryType, review_type_id: number) {
     const datestr = getTodayDate()
     // 查找：今天的，card_id匹配的记录。
     // 保证 (review_at,card_id) 联合唯一
@@ -245,26 +286,17 @@ class ReciteCardsDatabase {
       .prepare(
         `
         SELECT id, remember,vague,forget FROM ${this.card_user_review_record_table_name}
-        WHERE card_id = ? AND review_at = ?
+        WHERE card_id = ? AND review_at = ? AND type = ?
         `
       )
-      .get(card_id, datestr) as
-      | {
-          id: number
-          remember: number
-          vague: number
-          forget: number
-          card_id: number
-          review_at: string
-        }
-      | undefined
+      .get(card_id, datestr, review_type_id) as UserReviewRecord | undefined
 
     if (record) {
       // 存在则更新
-      this.updateReviewRecord(record.id, type)
+      this.updateReviewRecord(record.id, memory_type, review_type_id)
     } else {
       // 否则创建
-      this.insertReviewRecord(card_id, type)
+      this.insertReviewRecord(card_id, memory_type, review_type_id)
     }
 
     // 根据type，将对应字段+1，写回原记录。
@@ -282,36 +314,37 @@ class ReciteCardsDatabase {
             ORDER BY review_at ASC, id ASC
         `
       )
-      .all(card_id, start_date, end_date)
+      .all(card_id, start_date, end_date) as UserReviewRecord[]
   }
 
   // 更新复习记录。当天的，选择记得，忘记等等... ...
   // 用户选择了某个记忆形式，要记录下来
-  private updateReviewRecord(review_id: number, type: MemoryType) {
+  private updateReviewRecord(review_id: number, memory_type: MemoryType, review_type_id: number) {
     this.db
       .prepare(
         `
         UPDATE ${this.card_user_review_record_table_name}
-        SET ${type} = ${type} + 1
-        WHERE id = ?
+        SET ${memory_type} = ${memory_type} + 1
+        WHERE id = ? AND type = ?
         `
       )
-      .run(review_id)
+      .run(review_id, review_type_id)
   }
-
-  private insertReviewRecord(card_id: number, type: MemoryType) {
-    const initialValues = {
-      remember: type === 'remember' ? 1 : 0,
-      vague: type === 'vague' ? 1 : 0,
-      forget: type === 'forget' ? 1 : 0,
+  // 插入新的复习记录
+  private insertReviewRecord(card_id: number, memory_type: MemoryType, review_type_id: number) {
+    const initialValues: Omit<UserReviewRecord, 'id'> = {
+      remember: memory_type === 'remember' ? 1 : 0,
+      vague: memory_type === 'vague' ? 1 : 0,
+      forget: memory_type === 'forget' ? 1 : 0,
       card_id,
-      review_at: getTodayDate()
+      review_at: getTodayDate(),
+      type: review_type_id
     }
     this.db
       .prepare(
         `
-        INSERT INTO ${this.card_user_review_record_table_name} (remember,vague,forget,card_id,review_at)
-        VALUES (@remember, @vague, @forget, @card_id, @review_at)
+        INSERT INTO ${this.card_user_review_record_table_name} (remember,vague,forget,card_id,review_at,type)
+        VALUES (@remember, @vague, @forget, @card_id, @review_at,@type)
         `
       )
       .run(initialValues)

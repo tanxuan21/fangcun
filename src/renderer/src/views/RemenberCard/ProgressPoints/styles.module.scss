@@ -1,0 +1,21 @@
+.point {
+  $point-size: 7px;
+  width: $point-size;
+  height: $point-size;
+  $point-color: #0cd854;
+  border: 1.4px solid $point-color;
+  border-radius: 100px;
+
+  &.finish {
+    background-color: fade-out($color: $point-color, $amount: .5);
+  }
+}
+
+
+.progress-points-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  //   flex-direction: column-reverse;
+  gap: 4px;
+}

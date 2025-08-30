@@ -1,3 +1,5 @@
+import { getTodayDate } from '@renderer/utils'
+
 export interface BookInterface {
   created_at: number
   description: string
@@ -60,4 +62,32 @@ export const DefaultBookSetting: BookSettingInterface = {
   forget_review_count: 3,
 
   arrange_review: false // 随便翻翻还是记录用户行为
+}
+
+export interface UserReviewRecord {
+  id: number
+  remember: number
+  vague: number
+  forget: number
+  card_id: number
+  review_at: string
+  type: number
+}
+
+export const DefaultUserReviewRecord: UserReviewRecord = {
+  id: 0,
+  remember: 0,
+  vague: 0,
+  forget: 0,
+  card_id: 0,
+  review_at: getTodayDate(),
+  type: 1
+}
+
+export interface UserReviewArrangement {
+  id: number
+  card_id: number
+  type: number
+  level: number
+  review_date: string
 }

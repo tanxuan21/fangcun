@@ -195,7 +195,8 @@ post `/api/recite/cards/review_update/:card_id`
 
 ```json
 {
-    type:"remember"|"vague"|"forget"
+    memory_type:"remember"|"vague"|"forget",
+    review_type:number
 }
 ```
 
@@ -204,6 +205,12 @@ post `/api/recite/cards/review_update/:card_id`
 post `/api/recite/cards/review_get/:card_id`
 
 根据 card_id 获取复习记录
+
+query params
+
+|   参数名    |                                 用途                                  |
+| :---------: | :-------------------------------------------------------------------: |
+| review_type | 获取特定review_type的复习安排。如果不填，那就是获取所有类型的复习安排 |
 
 request:
 
@@ -226,6 +233,7 @@ respone:
             "remember": 2,
             "vague": 1,
             "forget": 2,
+            "type":1,
             "card_id": 1,
             "review_at": "2025-08-24"
         },
@@ -235,3 +243,57 @@ respone:
 ```
 
 可能找到一个空数组。前端自行处理。
+
+
+## 复习安排
+
+### 结束复习
+
+post `/api/recite/card/finish_review/:card_id`
+
+结束复习，将今天的日期写入 `card` 的 `review_at`
+同时，**前端计算下次需要复习的日期，和这个单词更新后的level**，一并写入。
+
+request 
+
+```json
+{
+    review_type:number,
+    next_review_date:string,
+    level:number,
+    control:number,
+}
+```
+
+
+control 是一个二进制数。标识权限控制。
+| 位数（低->高） |     控制     |                 简介                  |
+| :------------: | :----------: | :-----------------------------------: |
+|       1        | 更新复习日期 | 更新 cards 表里存的最近一天的复习日期 |
+|       2        |   安排复习   |        根据当天的情况安排复习         |
+
+
+### 获取安排
+
+get `/api/recite/card/review_arrangement/:card_id`
+
+query params
+
+|   参数名    |                                 用途                                  |
+| :---------: | :-------------------------------------------------------------------: |
+| review_type | 获取特定review_type的复习安排。如果不填，那就是获取所有类型的复习安排 |
+
+
+response
+
+```json
+[
+    {
+        id: number
+        card_id: number
+        type: number
+        level: number
+        review_date: string
+    }...
+]
+```

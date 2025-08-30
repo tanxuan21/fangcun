@@ -22,6 +22,7 @@ router.post(
   })
 )
 
+// 批量添加卡片
 router.post(
   '/add/multiple/',
   ReqServerErrorFilter((req: Request, res: Response) => {
@@ -86,7 +87,7 @@ router.get(
     }
   })
 )
-
+// 根据book查询卡片
 router.get(
   '/get_book/:book_id',
   ReqServerErrorFilter((req: Request, resp: Response) => {
@@ -104,15 +105,18 @@ router.get(
 )
 
 // 更新复习记录
-
 router.post(
   '/review_update/:card_id',
   ReqServerErrorFilter((req: Request, resp: Response) => {
     const body = req.body
     const card_id = parseInt(req.params.card_id)
     if (card_id) {
-      if (HTTP_422_check(body, ['type'])) {
-        ReciteCardsDataBaseInstance.add_review_record(card_id, body['type'])
+      if (HTTP_422_check(body, ['review_type', 'memory_type'])) {
+        ReciteCardsDataBaseInstance.add_review_record(
+          card_id,
+          body['memory_type'],
+          body['review_type']
+        )
         makeSuccessRep(resp)
       } else {
         Make422Resp(resp)
@@ -131,6 +135,7 @@ router.post(
   '/review_get/:card_id',
   ReqServerErrorFilter((req: Request, res: Response) => {
     const card_id = parseInt(req.params.card_id)
+    const { review_type } = req.query
     if (card_id) {
       const body = req.body
       const reviews = ReciteCardsDataBaseInstance.get_review_record(
@@ -138,10 +143,53 @@ router.post(
         body['start_date'],
         body['end_date']
       )
-      makeSuccessRep(res, reviews)
+      if (review_type !== undefined) {
+        // 过滤掉 type
+        makeSuccessRep(
+          res,
+          reviews.filter((rv) => rv.type === parseInt(review_type as string))
+        )
+      } else {
+        makeSuccessRep(res, reviews)
+      }
     } else {
       Make422Resp(res)
     }
+  })
+)
+
+// 背完单词，更新复习安排
+router.post(
+  '/finish_review/:card_id',
+  ReqServerErrorFilter((req: Request, res: Response) => {
+    const card_id = parseInt(req.params['card_id'])
+    const body = req.body
+    if (HTTP_422_check(body, ['review_type', 'next_review_date', 'level', 'control'])) {
+      ReciteCardsDataBaseInstance.finished_review(
+        card_id,
+        parseInt(body['review_type']),
+        body['next_review_date'],
+        parseInt(body['level']),
+        parseInt(body['control'])
+      )
+      makeSuccessRep(res)
+    } else {
+      Make422Resp(res)
+    }
+  })
+)
+
+// 获取复习安排
+router.get(
+  '/review_arrangement/:card_id',
+  ReqServerErrorFilter((req: Request, resp: Response) => {
+    const card_id = parseInt(req.params.card_id)
+    const { review_type } = req.query
+    const data = ReciteCardsDataBaseInstance.get_review_arrangement(
+      card_id,
+      parseInt(review_type as string)
+    )
+    makeSuccessRep(resp, data)
   })
 )
 export default router

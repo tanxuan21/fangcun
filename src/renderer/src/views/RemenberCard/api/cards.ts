@@ -1,3 +1,5 @@
+import { UserReviewArrangement } from '../types'
+
 const PREFIX = `${'http://localhost:3001'}/api/recite/cards`
 
 export const get_card_by_card_id = async (card_id: number) => {
@@ -66,8 +68,22 @@ export const delete_card = async (card_id: number) => {
   return await resp.json()
 }
 
-export const get_card_review = async (card_id: number, start_date: string, end_date: string) => {
-  const resp = await fetch(`${PREFIX}/review_get/${card_id}`, {
+// 复习
+
+// 获取复习记录
+export const get_card_review = async (
+  card_id: number,
+  start_date: string,
+  end_date: string,
+  review_type?: number
+) => {
+  const params = new URLSearchParams()
+  if (review_type !== undefined) {
+    params.append('review_type', review_type.toString())
+  }
+  const queryString = '?' + params.toString()
+
+  const resp = await fetch(`${PREFIX}/review_get/${card_id}${queryString}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -83,22 +99,67 @@ export const get_card_review = async (card_id: number, start_date: string, end_d
       remember: number
       vague: number
       forget: number
+      type: number
       card_id: number
       review_at: string
     }[]
   }
 }
 
+// 更新复习记录
 export const update_card_review = async (
   card_id: number,
-  type: 'remember' | 'vague' | 'forget'
+  memory_type: 'remember' | 'vague' | 'forget',
+  review_type: number
 ) => {
   const resp = await fetch(`${PREFIX}/review_update/${card_id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      type
+      memory_type,
+      review_type
     })
   })
   return await resp.json()
+}
+
+// 完成复习
+
+export const finish_review = async (
+  card_id: number,
+  review_type: number,
+  next_review_date: string,
+  level: number,
+  control: number
+) => {
+  const resp = await fetch(`${PREFIX}/finish_review/${card_id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      review_type,
+      next_review_date,
+      level,
+      control
+    })
+  })
+  return await resp.json()
+}
+
+// 获取复习安排
+
+export const get_review_arrangement = async (card_id: number, review_type?: number) => {
+  const params = new URLSearchParams()
+
+  if (review_type !== undefined) {
+    params.append('review_type', review_type.toString())
+  }
+  const queryString = '?' + params.toString()
+  const resp = await fetch(`${PREFIX}/review_arrangement/${card_id}${queryString}`, {
+    method: 'GET'
+  })
+  return (await resp.json()) as {
+    success: boolean
+    message: string
+    data: UserReviewArrangement[]
+  }
 }

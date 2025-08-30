@@ -23,7 +23,9 @@
     }
   }
 
-  &>.audio-disable {}
+  &>.audio-disable {
+    cursor: not-allowed;
+  }
 
   &>.audio-play {}
 

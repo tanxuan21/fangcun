@@ -11,6 +11,8 @@ export type CardDataType = {
   A: string
   id: string
   book_id: number
+  review_at: string
+  //   cards_count:string
 }
 
 // createContext 的类型标注必须和后面value的一致
