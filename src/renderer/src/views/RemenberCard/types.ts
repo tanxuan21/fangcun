@@ -77,7 +77,11 @@ export const DefaultBookSetting: BookSettingInterface = {
 }
 
 export const DefaultBookInfo: BookInfoInterface = {
-  reviews_count: [],
+  reviews_count: [
+    { count: 0, review_type_id: 1 },
+    { count: 0, review_type_id: 2 },
+    { count: 0, review_type_id: 3 }
+  ],
   cards_count: 0
 }
 export interface UserReviewRecord {

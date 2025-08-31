@@ -131,6 +131,8 @@ export const RecordMain = () => {
         <div
           className={`${styles['record-cards-list-add']} ${styles['card-list-item']}`}
           onClick={async () => {
+            // 这里的问题是，book.info 根据里面已有的review_type++。
+            // 所以，对新建的book，要求info的review_count的结构匹配setting的review_mode 里open字段为true
             add_new_card_book_info_update(book.info, 1) // 更新book info，添加一张卡片
             const resp = await add_card('question', 'answer', book)
             // 后端返回新添加的card_id，根据这个id修改前端
