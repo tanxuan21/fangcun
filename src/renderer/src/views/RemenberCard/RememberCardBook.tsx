@@ -20,6 +20,7 @@ import { CardListItem } from './CardListItem/CardListItem'
 import { Layout } from './Layout/Layout'
 import { RecordMain } from './RecordMain/RecoreMain'
 import { updateBookInfo } from './api/books'
+import { ReviewSummary } from './ReviewSummary/ReviewSummary'
 
 // 卡片对组件
 // 复习使用
@@ -628,7 +629,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
 
     // 延迟，等待前端的界面更新
     await delay(450)
-    console.log('next', new_recite_card)
+    // console.log('next', new_recite_card)
 
     // 洗牌
     shuffleArray(recite_card_idx_queue)
@@ -716,6 +717,9 @@ const RememberCardBooksInner = () => {
   }
   const nav = useNavigate()
   const BookSettingPageRef = useRef<BookSettingPageAPI>(null)
+
+  // 获取 cardsExtendList
+  const ReviewSummaryRef = useRef<{ show: () => void }>()
   return (
     <div className={styles['remember-card-app-container']}>
       <header>
@@ -730,7 +734,13 @@ const RememberCardBooksInner = () => {
         <span>{mode} Mode</span>
 
         <div className={styles['header-icon-group']}>
-          <IconTail IconName="#icon-info" className={styles['icon']}></IconTail>
+          <IconTail
+            IconName="#icon-info"
+            onClick={() => {
+              ReviewSummaryRef.current?.show()
+            }}
+            className={styles['icon']}
+          ></IconTail>
           {/* 修改模式 */}
           <Dropdown
             trigger={['click']}
@@ -775,12 +785,14 @@ const RememberCardBooksInner = () => {
         </div>
       </header>
 
-      <main>{ReciteMode2Component[mode]}</main>
+      <main>
+        {ReciteMode2Component[mode]}
+        <ReviewSummary ref={ReviewSummaryRef}></ReviewSummary>
+      </main>
       <footer>
         <p>book_id:{book.id}</p>
         {!book.setting.arrange_review && <p>warning: your review will not be recorded!</p>}
       </footer>
-
       <BookSettingPage ref={BookSettingPageRef}></BookSettingPage>
     </div>
   )

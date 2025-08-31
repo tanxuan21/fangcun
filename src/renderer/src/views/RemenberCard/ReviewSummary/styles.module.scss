@@ -1,0 +1,14 @@
+.review-summary-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transition: .3s;
+  translate: -100%;
+  z-index: 20;
+  background: #fff;
+
+  &.review-summary-show {
+    translate: 0;
+  }
+
+}
