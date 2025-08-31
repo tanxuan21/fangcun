@@ -77,13 +77,14 @@ class ReciteBooksDatabase {
   // 添加新书
   add_book(name?: string, description?: string, setting?: BookSettingInterface) {
     const insert = this.db.prepare(`
-        INSERT INTO books (name,description,created_at,updated_at,setting) VALUES (?,?,?,?,?)`)
+        INSERT INTO books (name,description,created_at,updated_at,setting,info) VALUES (?,?,?,?,?,?)`)
     const info = insert.run(
       name || 'new book',
       description || 'description of book',
       Date.now(),
       Date.now(),
-      setting || DefaultBookSetting
+      setting || JSON.stringify(DefaultBookSetting),
+      '{}'
     )
     return info.lastInsertRowid // 要返回那个index才对
   }
