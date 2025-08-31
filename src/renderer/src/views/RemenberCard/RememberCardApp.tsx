@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './styles.module.scss'
 import { EditableText } from '../../components/EditableText/EditableText'
-import { BookInterface, DefaultBookSetting } from './types'
+import { BookInterface, DefaultBookInfo, DefaultBookSetting } from './types'
 import { addBook, deleteBook, get_all_books, updateBookInfo } from './api/books'
 import { Icon, IconTail } from '@renderer/components/Icon'
 import { Dropdown, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { CSVUploader } from '@renderer/components/CSVUploader/CSVUploader'
-import { add_cards_list } from './api/cards'
+import { add_cards_list, add_new_card_book_info_update, rebuild_book_info } from './api/cards'
+import { alignConfig } from '@renderer/utils'
+import { NotifySpirit } from '../../components/NotifySpirit/NotifySpirit'
 
 const formatDateManual = (timestamp: number): string => {
   const date = new Date(timestamp)
@@ -30,6 +32,13 @@ function BookItem({
 }) {
   const nav = useNavigate()
   const [messageApi, contextHolder] = message.useMessage()
+  const review_count = useMemo(() => {
+    let total_review_count = 0
+    for (let i = 0; i < book.info.reviews_count.length; i++) {
+      total_review_count += book.info.reviews_count[i].count
+    }
+    return total_review_count
+  }, [book])
   return (
     <Dropdown
       menu={{
@@ -58,12 +67,14 @@ function BookItem({
         }}
       >
         {contextHolder}
+        {review_count > 0 && <NotifySpirit count={review_count}></NotifySpirit>}
         <CSVUploader
           onReadComplete={async (result) => {
             // 检查是否格式正确：
             const field = result.meta.fields
             if (field?.includes('a') && field.includes('q')) {
-              add_cards_list(book.id, result.data as { q: string; a: string }[])
+              add_new_card_book_info_update(book.info, result.data.length) // 更新 book.info 对象，然后可以写入后端
+              await add_cards_list(book, result.data as { q: string; a: string }[])
             } else {
               // 弹出，格式错误弹框
               messageApi.error('csv data format error!')
@@ -77,11 +88,9 @@ function BookItem({
             Text={book.name}
             onChange={(new_text: string) => {
               onUpdateBook({ ...book, name: new_text })
-              //   console.log('onchange', new_text)
             }}
             onEditedFinish={(new_text: string) => {
               onRequestSave()
-              //   console.log('editfinished', new_text)
             }}
           ></EditableText>
           <br />
@@ -96,8 +105,13 @@ function BookItem({
             }}
           ></EditableText>
           <br />
-          <p className={styles['book-created-at']}>创建于： {formatDateManual(book.created_at)}</p>
-          <p className={styles['book-updated-at']}>修改于： {formatDateManual(book.updated_at)}</p>
+          <p className={styles['book-info-item']}>cards count: {book.info.cards_count}</p>
+          <p className={styles['book-info-item']}>
+            created_at: {formatDateManual(book.created_at)}
+          </p>
+          <p className={styles['book-info-item']}>
+            modifyed_at: {formatDateManual(book.updated_at)}
+          </p>
         </CSVUploader>
       </div>
     </Dropdown>
@@ -106,15 +120,28 @@ function BookItem({
 
 export function RemenberCardApp() {
   const [books_list, set_books_list] = useState<BookInterface[]>([])
+  const [messageApi, contextHolder] = message.useMessage()
   useEffect(() => {
     ;(async function () {
       const data = await get_all_books()
-      set_books_list(data.data)
+      const _books_list = data.data
+      // 对齐 book 的 info，setting 字段
+
+      for (let i = 0; i < _books_list.length; i++) {
+        _books_list[i].setting = alignConfig(DefaultBookSetting, JSON.parse(_books_list[i].setting))
+        const info = JSON.parse(_books_list[i].info)
+        // console.log(_books_list[i], 'reviews_count' in info, info)
+        _books_list[i].info = alignConfig(DefaultBookInfo, info)
+      }
+      set_books_list(_books_list)
+      console.log(_books_list)
     })()
   }, [])
   return (
     <div className={styles['books-container']}>
+      {contextHolder}
       <header className={styles['books-container-header']}>
+        {/* 添加新书 */}
         <IconTail
           onClick={async () => {
             const resp = await addBook()
@@ -129,7 +156,8 @@ export function RemenberCardApp() {
                   created_at: Date.now(),
                   updated_at: Date.now(),
                   setting: DefaultBookSetting,
-                  id: resp.data.book_id
+                  id: resp.data.book_id,
+                  info: DefaultBookInfo
                 }
               ])
             } else {
@@ -139,6 +167,22 @@ export function RemenberCardApp() {
           IconName="#icon-jia"
           className={styles['add-book-icon']}
         ></IconTail>
+        {/* 重建book info */}
+        <IconTail
+          onClick={async () => {
+            const _books_list: BookInterface[] = []
+            for (const book of books_list) {
+              //   console.log(book)
+              const data = await rebuild_book_info(book)
+              _books_list.push(data)
+              // 更新book的数据
+              const resp = await updateBookInfo({ info: data.info, id: data.id })
+              if (!resp.success) messageApi.error(resp.message)
+            }
+            set_books_list(_books_list)
+          }}
+          IconName="#icon-zhongjian"
+        />
       </header>
 
       <CSVUploader
@@ -160,7 +204,7 @@ export function RemenberCardApp() {
                   )
                 }}
                 onRequestSave={async () => {
-                  updateBookInfo(item)
+                  updateBookInfo({ id: item.id, name: item.name, description: item.description })
                 }}
                 onDelete={(id: number) => {
                   set_books_list((prev) =>

@@ -67,3 +67,7 @@ ALTER TABLE old_table_name
 RENAME TO new_table_name;
 ```
 
+- [ ] 上传；record 模式添加卡片；删除卡片 更新 book.info 的 cards_count 字段；
+- [ ] 当 finishreview 时，根据 review_type 更新 review_count 数组对应元素
+- [ ] 更新 book setting review_mode，增/删 review_count 数组
+- [ ] 重建 book info，根据card 构建 book info 数据

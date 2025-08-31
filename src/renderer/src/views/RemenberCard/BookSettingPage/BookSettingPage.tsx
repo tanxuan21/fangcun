@@ -7,6 +7,7 @@ import { useCardData } from '../CardsData'
 import { BookSettingInterface, DefaultBookSetting } from '../types'
 import { Icon, IconTail } from '@renderer/components/Icon'
 import { updateBookInfo } from '../api/books'
+import { rebuild_book_info } from '../api/cards'
 
 export interface BookSettingPageAPI {
   pop: () => void
@@ -15,9 +16,9 @@ export interface BookSettingPageAPI {
 interface props {}
 
 export const BookSettingPage = forwardRef(({}: props, ref) => {
-  const { setting, set_setting, book_id } = useCardData()
+  const { set_setting, book_id, book, set_book } = useCardData()
   const [setting_page_state, set_setting_page_state] = useState<'show' | 'hide'>('hide')
-  const [setting_cache, set_setting_cache] = useState<BookSettingInterface>(setting)
+  const [setting_cache, set_setting_cache] = useState<BookSettingInterface>(book.setting)
   useImperativeHandle(ref, () => ({
     pop: () => {
       set_setting_page_state('show')
@@ -33,8 +34,8 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
 
   // 这个不会引起循环更新。
   useEffect(() => {
-    set_setting_cache(setting)
-  }, [setting, set_setting_page_state])
+    set_setting_cache(book.setting)
+  }, [book.setting, setting_page_state])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -209,10 +210,22 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
             color="danger"
             variant="filled"
             onClick={async () => {
-              const resp = await updateBookInfo({ id: book_id, setting: DefaultBookSetting })
+              // 根据setting 重构 info数据
+              const book_rebuild = await rebuild_book_info({
+                ...book,
+                setting: DefaultBookSetting
+              })
+              // 更新后端数据
+              const resp = await updateBookInfo({
+                id: book_id,
+                setting: DefaultBookSetting,
+                info: book_rebuild.info
+              })
+              // 更新前端数据
               if (resp.success) {
                 set_setting_page_state('hide')
                 set_setting(DefaultBookSetting) // 将缓存区写入正式配置
+                set_book(book_rebuild)
               } else {
                 console.error('保存错误')
               }
@@ -232,11 +245,20 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
             color="cyan"
             variant="solid"
             onClick={async () => {
-              // 成功，退出设置页。
-              const resp = await updateBookInfo({ id: book_id, setting: setting_cache })
+              // 根据 setting 重构 book info，
+              const book_rebuild = await rebuild_book_info({ ...book, setting: setting_cache })
+              // 更新后端数据
+              const resp = await updateBookInfo({
+                id: book_id,
+                setting: setting_cache,
+                info: book_rebuild.info
+              })
+              // 更新前端数据
               if (resp.success) {
                 set_setting_page_state('hide')
                 set_setting(setting_cache) // 将缓存区写入正式配置
+
+                set_book(book_rebuild)
               } else {
                 console.error('保存错误')
               }

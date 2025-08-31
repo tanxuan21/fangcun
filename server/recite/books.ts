@@ -1,12 +1,4 @@
 import Database from 'better-sqlite3'
-import { DB_NAME } from './config'
-
-// const db = Database('recite.db')
-
-// db.exec(`
-//     create table if not exists
-//     `)
-
 interface BookSettingInterface {
   audio_model: string // 允许不填，不填代表不使用发音
   review_mode: {
@@ -97,18 +89,25 @@ class ReciteBooksDatabase {
   }
   // 更新本子信息，想更新啥更新啥。
   update_book_info(book_id: number, updates) {
-    const update_allow_feilds = ['name', 'description', 'setting']
+    const update_allow_feilds = ['name', 'description', 'setting', 'info']
     // 将updates的每一个元素搞成string
     for (const key in updates) {
-      updates[key] = JSON.stringify(updates[key])
+      if (key === 'setting' || key === 'info') updates[key] = JSON.stringify(updates[key])
+    }
+    // console.log(book_id, updates)
+
+    const set_str = Object.keys(updates)
+      .filter((k) => update_allow_feilds.includes(k))
+      .map((k) => `${k} = @${k}`)
+      .join(',')
+    if (!set_str) {
+      console.warn('无效更新请求', book_id, updates)
+      return
     }
     this.db
       .prepare(
         `
-        UPDATE books SET ${Object.keys(updates)
-          .filter((k) => update_allow_feilds.includes(k))
-          .map((k) => `${k} = @${k}`)
-          .join(',')}
+        UPDATE books SET ${set_str}
         WHERE id = @id;
         `
       )

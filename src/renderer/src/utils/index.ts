@@ -20,6 +20,7 @@ export function alignConfig(defaultConfig: any, userConfig: any): any {
   }
   const result: any = {}
   for (const key of Object.keys(defaultConfig)) {
+    // console.log(key, userConfig)
     if (key in userConfig) {
       result[key] = alignConfig(defaultConfig[key], userConfig[key])
     } else {

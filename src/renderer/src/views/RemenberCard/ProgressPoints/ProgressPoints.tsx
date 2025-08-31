@@ -1,3 +1,5 @@
+import { Icon } from '@renderer/components/Icon'
+
 import styles from './styles.module.scss'
 interface props {
   count: number
@@ -17,6 +19,7 @@ export const ProgressPoints = ({ className, count, progress }: props) => {
         .map((_item, index) => (
           <Point key={index} finish={index < progress} />
         ))}
+      {/* {<Icon IconName="#icon-queren1"></Icon>} */}
     </div>
   )
 }

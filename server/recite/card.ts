@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3'
-import { getTodayDate } from '../utils'
+import { daysAfterToday, getTodayDate } from '../utils'
 
 // class Card {
 //   private readonly db: Database.Database
@@ -153,7 +153,7 @@ class ReciteCardsDatabase {
         VALUES (?,?,?,?,?,?)
         `
       )
-      .run(Q, A, book_id, datestr, datestr, datestr)
+      .run(Q, A, book_id, datestr, datestr, daysAfterToday(-1))
     // 添加复习安排
     // 有几种复习方案呢？这个是个变数
     return info.lastInsertRowid as number
@@ -171,7 +171,7 @@ class ReciteCardsDatabase {
     try {
       const info = this.db.transaction((cards: { q: string; a: string }[]) => {
         for (const c of cards) {
-          stmt.run(c.q, c.a, book_id, datestr, datestr, datestr)
+          stmt.run(c.q, c.a, book_id, datestr, datestr, daysAfterToday(-1))
         }
         return cards.length
       })(cards_list)
@@ -256,7 +256,7 @@ class ReciteCardsDatabase {
         `
       )
       .run(card_id)
-    // 不存在则创建
+    // 写入复习安排
     this.db
       .prepare(
         `
@@ -264,6 +264,7 @@ class ReciteCardsDatabase {
         (card_id,type,review_date,level) VALUES (?,?,?,?)`
       )
       .run(card_id, review_type, next_review_date, level)
+    // 更新 book info
   }
 
   // 获取卡片的复习安排

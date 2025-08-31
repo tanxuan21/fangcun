@@ -75,6 +75,7 @@ $forget-red:rgb(224, 50, 19);
       border-radius: 10px;
       padding: 26px;
       color: #444;
+      position: relative;
 
       .book-name {
         font-size: 24px;
@@ -92,14 +93,7 @@ $forget-red:rgb(224, 50, 19);
         white-space: nowrap;
       }
 
-      .book-created-at {
-        //   text-align: right;
-        font-size: 10px;
-        color: #bbb;
-      }
-
-      .book-updated-at {
-        //   text-align: right;
+      & .book-info-item {
         font-size: 10px;
         color: #bbb;
       }
@@ -169,6 +163,21 @@ $forget-red:rgb(224, 50, 19);
     height: 30px;
     background-color: $bar-background;
     width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 13px;
+
+    &>p {
+      padding: 0 5px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.027);
+      }
+    }
   }
 
 

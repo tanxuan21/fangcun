@@ -59,3 +59,19 @@ export const getTodayDate = () => {
 
   return `${year}-${month}-${day}`
 }
+export function formatDate(date: Date) {
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0') // 月份从0开始，所以需要加1
+  const day = date.getDate().toString().padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+export function daysAfterToday(d: number): string {
+  if (d < 0) {
+    console.warn('d < 0', d)
+  }
+  const date = new Date()
+  date.setDate(date.getDate() + d)
+  return formatDate(date)
+}

@@ -2,7 +2,7 @@ import { BookInterface } from '../types'
 
 const API_URL = 'http://localhost:3001/api/recite/books'
 
-export const updateBookInfo = async (bookitem: Partial<BookInterface>) => {
+export const updateBookInfo = async (bookitem: Partial<BookInterface> & { id: number }) => {
   const resp = await fetch(`${API_URL}/update/${bookitem.id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

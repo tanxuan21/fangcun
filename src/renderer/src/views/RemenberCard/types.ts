@@ -1,5 +1,9 @@
 import { getTodayDate } from '@renderer/utils'
 
+export interface Styleprops {
+  className?: string
+  style?: React.CSSProperties
+}
 export interface BookInterface {
   created_at: number
   description: string
@@ -7,6 +11,14 @@ export interface BookInterface {
   name: string
   setting: BookSettingInterface
   updated_at: number
+  info: BookInfoInterface
+}
+export interface BookInfoInterface {
+  cards_count: number
+  reviews_count: {
+    review_type_id: number
+    count: number
+  }[]
 }
 export interface BookSettingInterface {
   audio_model: string // 允许不填，不填代表不使用发音
@@ -64,6 +76,10 @@ export const DefaultBookSetting: BookSettingInterface = {
   arrange_review: false // 随便翻翻还是记录用户行为
 }
 
+export const DefaultBookInfo: BookInfoInterface = {
+  reviews_count: [],
+  cards_count: 0
+}
 export interface UserReviewRecord {
   id: number
   remember: number
@@ -90,4 +106,23 @@ export interface UserReviewArrangement {
   type: number
   level: number
   review_date: string
+}
+
+//所有card的数据
+export type CardDataType = {
+  Q: string
+  A: string
+  id: string
+  book_id: number
+  review_at: string
+}
+export type CardDataExtendType = CardDataType & {
+  remember: number
+  vague: number
+  forget: number
+  review_type: number // 复习的类型
+  review_count: number // 复习的数量，也就是还需要再答对几次即算作是完成任务
+  review_progress_count: number // 复习进度
+  review_arrangement: string // 复习安排
+  level: number // 等级
 }

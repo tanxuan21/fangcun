@@ -1,268 +1,25 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './styles.module.scss'
 import { Icon, IconTail } from '../../components/Icon/index'
-import { memo, MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Dropdown, message } from 'antd'
 import {
-  add_card,
-  delete_card,
+  fetchCardsExtendInfo,
   finish_review,
-  get_card_review,
-  get_review_arrangement,
-  update_card,
+  reduce_review_type_count,
   update_card_review
 } from './api/cards'
-import { CardDataType, CardsDataProvider, useCardData } from './CardsData'
-
-import { EditableFeild } from './EditableFeild'
+import { CardsDataProvider, useCardData } from './CardsData'
 import { Audio } from '../../components/Audio/Audio'
 import { daysAfterToday, delay, fade, getTodayDate, shuffleArray } from '@renderer/utils'
 import { BookSettingPage, BookSettingPageAPI } from './BookSettingPage/BookSettingPage'
-import { BookReciteModeName, BookSettingInterface, UserReviewRecord } from './types'
+import { BookReciteModeName, BookSettingInterface, CardDataExtendType, CardDataType } from './types'
 import { ProgressPoints } from './ProgressPoints/ProgressPoints'
-
-// 基础布局组件
-const Layout = ({ card, cards_list }) => {
-  const [expand, set_expand] = useState<boolean>(true)
-  return (
-    <>
-      <div className={styles['main-wrapper']}>{card}</div>
-      <div className={`${styles['drawer-wrapper']} ${expand && styles['drawer-wrapper-expand']}`}>
-        <div
-          className={`${styles['drawer-handle']} ${expand && styles['drawer-handle-expand']}`}
-          onClick={(event) => {
-            event.stopPropagation()
-            set_expand(!expand)
-          }}
-        ></div>
-        <div className={styles['cards-container']}>{cards_list}</div>
-      </div>
-    </>
-  )
-}
-
-// 抽屉里的card list item
-const CardListItem = ({
-  active,
-  content,
-  onClick,
-  children
-}: {
-  active: boolean
-  content: React.ReactNode
-  onClick: MouseEventHandler<HTMLDivElement>
-  children?: React.ReactNode
-}) => {
-  return (
-    <div
-      onClick={onClick}
-      className={`${styles['card-list-item']} ${active && styles['card-list-item-active']}`}
-    >
-      {children}
-      <p>{content}</p>
-    </div>
-  )
-}
-
-// 记录组件
-const RecordMain = () => {
-  const { cards, set_cards, book_id } = useCardData()
-  const [edite_card, set_edite_card] = useState<CardDataType | null>(null)
-
-  const q_ref = useRef<{ focus: () => void }>(null)
-  // cards更新也要更新 edite_card?
-  // 目前来看是的，否则，保存完之后会导致item的显示不更新
-  useEffect(() => {
-    if (!edite_card) return
-    cards.forEach((x) => {
-      if (x.id === edite_card.id) {
-        set_edite_card(x)
-      }
-    })
-  }, [cards])
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const key = event.key
-      switch (key) {
-        case 'ArrowLeft': {
-          break
-        }
-        case 'ArrowRight': {
-          break
-        }
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [])
-  // 卡片组件，显示/编辑 edita_card
-  const card = () => {
-    return (
-      <div
-        onClick={(event) => {
-          event?.stopPropagation()
-        }}
-        className={styles['record-main-wrapper']}
-      >
-        {edite_card && (
-          <>
-            <div className={styles['q']}>
-              <EditableFeild
-                ref={q_ref}
-                className={styles['edite-feild']}
-                value={edite_card.Q}
-                onUpdate={(next: string) => {
-                  set_cards((prev) =>
-                    prev.map((x) => {
-                      if (x.id === edite_card.id) {
-                        return {
-                          ...edite_card,
-                          Q: next
-                        }
-                      }
-                      return x
-                    })
-                  )
-                }}
-                onSave={async (next: string) => {
-                  const resp = await update_card(parseInt(edite_card.id), {
-                    Q: next
-                  })
-                  if (!resp.success) {
-                    console.log(resp)
-                    throw new Error(resp.message) // 扔给editablefeild 处理
-                  }
-                }}
-              ></EditableFeild>
-            </div>
-            <div className={styles['a']}>
-              <EditableFeild
-                className={styles['edite-feild']}
-                value={edite_card.A}
-                onUpdate={(next: string) => {
-                  set_cards((prev) =>
-                    prev.map((x) => {
-                      if (x.id === edite_card.id) {
-                        return {
-                          ...edite_card,
-                          A: next
-                        }
-                      }
-                      return x
-                    })
-                  )
-                }}
-                onSave={async (next: string) => {
-                  const resp = await update_card(parseInt(edite_card.id), {
-                    A: next
-                  })
-                  console.log(resp)
-
-                  if (!resp.success) {
-                    console.log(resp)
-                    throw new Error(resp.message) // 扔给editablefeild 处理
-                  }
-                }}
-                onTab={(event) => {
-                  event.preventDefault()
-                  ;(q_ref.current as { focus: () => void }).focus()
-                }}
-              ></EditableFeild>
-            </div>
-          </>
-        )}
-      </div>
-    )
-  }
-
-  // 卡片列表
-  const cards_list = () => {
-    return (
-      <div className={styles['record-drawer-wrapper']}>
-        <div
-          className={`${styles['record-cards-list-add']} ${styles['card-list-item']}`}
-          onClick={async () => {
-            const resp = await add_card('question', 'answer', book_id)
-            // 后端返回新添加的card_id，根据这个id修改前端
-            set_cards((prev) => [
-              ...prev,
-              {
-                id: resp.data.card_id,
-                Q: 'question',
-                A: 'answer',
-                book_id,
-                review_at: getTodayDate()
-              }
-            ])
-          }}
-        >
-          <Icon IconName="#icon-jia"></Icon>
-        </div>
-        {cards.map((item) => (
-          <Dropdown
-            key={item.id}
-            trigger={['contextMenu']}
-            menu={{
-              items: [
-                {
-                  key: '1',
-                  label: '删除',
-                  danger: true,
-                  icon: <Icon IconName="#icon-shanchu"></Icon>,
-                  onClick: async () => {
-                    const resp = await delete_card(parseInt(item.id))
-                    if (resp.success) {
-                      set_cards((prev) => prev.filter((x) => x.id !== item.id))
-                    } else {
-                      console.error(resp)
-                    }
-                  }
-                }
-              ]
-            }}
-          >
-            {/* 卡片item */}
-            <div>
-              <CardListItem
-                onClick={(event) => {
-                  event.stopPropagation()
-                  // 如果某元素正在被编辑，这时候要失焦
-                  // 否则直接跳会有bug。失焦保存数据，切换editacard写入数据会冲突。
-                  if (document.activeElement instanceof HTMLElement) {
-                    document.activeElement.blur()
-                  }
-
-                  set_edite_card(item)
-                }}
-                active={edite_card?.id === item.id}
-                content={item.Q}
-              ></CardListItem>
-            </div>
-            {/* <div
-              onClick={(event) => {
-                event.stopPropagation()
-                // 如果某元素正在被编辑，这时候要失焦
-                // 否则直接跳会有bug。失焦保存数据，切换editacard写入数据会冲突。
-                if (document.activeElement instanceof HTMLElement) {
-                  document.activeElement.blur()
-                }
-
-                set_edite_card(item)
-              }}
-              className={`${styles['card-list-item']} ${edite_card?.id === item.id && styles['card-list-item-active']}`}
-            >
-              <p>{item.Q}</p>
-            </div> */}
-          </Dropdown>
-        ))}
-      </div>
-    )
-  }
-  return <Layout card={card()} cards_list={cards_list()}></Layout>
-}
+import { FinishReview } from './FinishReviewPage/FinishReviewPage'
+import { CardListItem } from './CardListItem/CardListItem'
+import { Layout } from './Layout/Layout'
+import { RecordMain } from './RecordMain/RecoreMain'
+import { updateBookInfo } from './api/books'
 
 // 卡片对组件
 // 复习使用
@@ -294,18 +51,19 @@ const CardPair = ({
   const [anserCardState, setAnserCardState] = useState<'ready' | 'show' | 'leave'>('ready')
 
   const [messageApi, contextHolder] = message.useMessage()
-  const { cards, setting } = useCardData()
+  const { cards, book } = useCardData()
 
   const [disableOpera, setDisableOpera] = useState<boolean>(false)
 
   // 快捷键事件
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // 这里的事件要绑定组件内部生成的事件，而不是传递进来的事件
       const keyMapping = {
         ' ': handle_show_answer,
         q: handle_remember,
-        w: handleVague,
-        e: handleForget
+        w: handle_vague,
+        e: handle_forget
       }
       if (keyMapping[event.key]) {
         keyMapping[event.key]()
@@ -359,7 +117,7 @@ const CardPair = ({
       setDisableOpera(true)
       // 网络请求
       // 设置是否安排复习，还是随便逛逛
-      const resp = setting.arrange_review
+      const resp = book.setting.arrange_review
         ? await update_card_review(parseInt(recite_card.id), memory_type, review_type_id)
         : {
             success: true,
@@ -560,92 +318,12 @@ const CardList = ({
     </>
   )
 }
-type CardDataExtendType = CardDataType & {
-  remember: number
-  vague: number
-  forget: number
-  review_type: number // 复习的类型
-  review_count: number // 复习的数量，也就是还需要再答对几次即算作是完成任务
-  review_progress_count: number // 复习进度
-  review_arrangement: string // 复习安排
-  level: number // 等级
-}
-
-// 取数组的首个元素
-function ArrTopFilter<T>(arr: T[], defaultValue: T): T {
-  if (arr.length < 1) {
-    return defaultValue
-  } else if (arr.length === 1) {
-    return arr[0]
-  } else {
-    console.warn(arr)
-    return arr[0]
-  }
-}
-
-// 获取所有cards的数据
-const fetchCardsExtendInfo = async (cards: CardDataType[], review_type_id: number) => {
-  const cards_extend: CardDataExtendType[] = []
-  for (const c of cards) {
-    // 获取用户review 记录
-    const item: CardDataExtendType = {
-      id: c.id,
-      Q: c.Q,
-      A: c.A,
-      review_at: c.review_at,
-      book_id: c.book_id,
-      remember: 0,
-      vague: 0,
-      forget: 0,
-      review_type: review_type_id,
-      review_count: 1,
-      review_progress_count: 0,
-      review_arrangement: getTodayDate(),
-      level: 1
-    }
-    {
-      const resp = await get_card_review(
-        parseInt(c.id),
-        getTodayDate(),
-        getTodayDate(),
-        review_type_id
-      )
-      if (resp.success) {
-        const card_review_user_record = ArrTopFilter<{
-          remember: number
-          forget: number
-          vague: number
-        }>(resp.data, { remember: 0, forget: 0, vague: 0 })
-        item.remember = card_review_user_record.remember
-        item.vague = card_review_user_record.vague
-        item.forget = card_review_user_record.forget
-      } else {
-        console.error('get review data error', resp)
-      }
-    }
-    {
-      const resp = await get_review_arrangement(parseInt(c.id), review_type_id)
-      if (resp.success) {
-        const card_review_arrangement = ArrTopFilter<{ level: number; review_date: string }>(
-          resp.data,
-          { level: 1, review_date: getTodayDate() }
-        )
-        item.level = card_review_arrangement.level
-        item.review_arrangement = card_review_arrangement.review_date
-      } else {
-        console.error('get review arrangement error', resp)
-      }
-    }
-    cards_extend.push(item)
-  }
-  return cards_extend
-}
 
 // ===========================================================================================
-// 正向背诵组件，读
+
 const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
   const [messageApi, contextHolder] = message.useMessage()
-  const { cards, setting } = useCardData()
+  const { cards, book } = useCardData()
   // 当前的背诵卡片
   const [recite_card, set_recite_card] = useState<CardDataExtendType | null>(null)
   // 卡片缓存，为了动画的妥协
@@ -656,6 +334,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
   // 队列，将要复习的卡片index队列
   const recite_card_idx_queue_ref = useRef<number[]>([])
 
+  const [finished_review, set_finished_review] = useState<boolean>(false)
   // 根据review_type_id -> QA 组件的mapping
 
   const AudioRef = useRef<{ play: () => void }>(null)
@@ -668,12 +347,12 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
           {recite_card_cache && (
             <>
               {recite_card_cache.Q}
-              {setting.audio_model && (
+              {book.setting.audio_model && (
                 <Audio
                   ref={AudioRef}
                   src={null}
                   content={recite_card_cache.Q}
-                  voice_model={setting.audio_model}
+                  voice_model={book.setting.audio_model}
                 ></Audio>
               )}
               {
@@ -715,13 +394,13 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
           {recite_card_cache && (
             <>
               <span>{recite_card_cache.Q}</span>
-              {setting.audio_model && (
+              {book.setting.audio_model && (
                 <Audio
                   ref={AudioRef}
                   src={null}
                   autoPlay={audio_auto_play}
                   content={recite_card_cache.Q}
-                  voice_model={setting.audio_model}
+                  voice_model={book.setting.audio_model}
                 ></Audio>
               )}
               <ProgressPoints
@@ -744,9 +423,9 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
               src={null}
               autoPlay={audio_auto_play}
               content={recite_card_cache.Q}
-              voice_model={setting.audio_model}
+              voice_model={book.setting.audio_model}
             ></Audio>
-          )}{' '}
+          )}
           <ProgressPoints
             className={styles['progress-points-class']}
             count={recite_card?.review_count || 0}
@@ -782,7 +461,11 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
     // 队列
     recite_card_idx_queue_ref.current = cards.map((_item, index) => index)
     ;(async function () {
-      const _cards_extend: CardDataExtendType[] = await fetchCardsExtendInfo(cards, review_type_id)
+      const _cards_extend: CardDataExtendType[] = await fetchCardsExtendInfo(
+        cards,
+        review_type_id,
+        book.setting
+      )
       setCardsExtend(_cards_extend)
       // 写入背诵队列。跳过那些今天已经复习完毕的
       const _queue: number[] = []
@@ -794,12 +477,16 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
       }
 
       // 创建完前端的extend数据，写入recite card
+      // 如果今天的背诵队列是空的，那说明背完了。
       if (_queue.length)
         (set_recite_card(_cards_extend[_queue[0]]), set_recite_card_cache(_cards_extend[_queue[0]]))
+      else finished()
       recite_card_idx_queue_ref.current = _queue
+
+      console.log(_cards_extend)
     })()
     // 复习安排记录
-  }, [cards])
+  }, [cards, book.setting])
 
   const getMemoryLevelReviewDelay = (setting: BookSettingInterface, level: number) => {
     for (const m of setting.memory_level) {
@@ -809,18 +496,19 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
     return 1
   }
 
+  // 安排下次复习时间
   const ArrangeNextReviewDate = (card: CardDataExtendType) => {
     const remember = card.remember
     const vague = card.vague
     const forget = card.forget
     const arrangement = { level: card.level, review_date: card.review_arrangement }
-    const highest_level = setting.memory_level.length - 1 // 最高等级
+    const highest_level = book.setting.memory_level.length - 1 // 最高等级
     if (forget > 0) {
       // 回退一个等级，注意考虑无穷级回退，最小级小于1级
       if (arrangement.level === -1) arrangement.level = highest_level
       else arrangement.level = Math.max(1, arrangement.level) //最小不小于一级。设定一级是最低级
     } else if (vague > 0) {
-      // 保持等级
+      // 保持等级，什么都不做
     } else {
       // 进等级考虑无穷级
       if (arrangement.level === highest_level || arrangement.level === -1) arrangement.level = -1
@@ -832,7 +520,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
       // 这个单词一遍过，只有remember。按照进级的天数复习
       // 按照权值算出来的东西大概是小数，我期望取整数部分，同时最小也要是一天之后。
       arrangement.review_date = daysAfterToday(
-        Math.max(1, Math.floor(getMemoryLevelReviewDelay(setting, arrangement.level)))
+        Math.max(1, Math.floor(getMemoryLevelReviewDelay(book.setting, arrangement.level)))
       )
     } else {
       // 说明这个词今天数次忘记/模糊。根据忘记/模糊的比例，计算延迟的复习日期
@@ -843,8 +531,8 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
         Math.max(
           1,
           Math.floor(
-            factor_forget * getMemoryLevelReviewDelay(setting, arrangement.level) + // 忘记，使用更新后的level的review_delay
-              factor_vague * getMemoryLevelReviewDelay(setting, arrangement.level) // 模糊，使用当前的review_delay
+            factor_forget * getMemoryLevelReviewDelay(book.setting, arrangement.level) + // 忘记，使用更新后的level的review_delay
+              factor_vague * getMemoryLevelReviewDelay(book.setting, arrangement.level) // 模糊，使用当前的review_delay
           )
         )
       )
@@ -864,9 +552,9 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
     // 拿到review_count
     const review_count =
       memory_type === 'forget'
-        ? setting.forget_review_count
+        ? book.setting.forget_review_count
         : memory_type === 'vague'
-          ? setting.vague_review_count
+          ? book.setting.vague_review_count
           : 0
 
     const recite_card_idx_queue = recite_card_idx_queue_ref.current
@@ -896,18 +584,24 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
         // 计算下次复习时间
         new_recite_card.review_at = getTodayDate() // 记得更新 card 数据 review_at 更新今天的日期为复习日
         const arrangement = ArrangeNextReviewDate(new_recite_card)
-        console.log(new_recite_card, `复习完毕 `, arrangement)
-
-        const resp = await finish_review(
-          parseInt(new_recite_card.id),
-          new_recite_card.review_type,
-          arrangement.review_date,
-          arrangement.level,
-          0
-        )
-        if (resp.success) {
-        } else {
-          messageApi.error(resp.message)
+        // 如果是随便逛逛，不发送网络请求请求
+        if (book.setting.arrange_review) {
+          // 完成复习，写入复习数据更新
+          const resp = await finish_review(
+            parseInt(new_recite_card.id),
+            new_recite_card.review_type,
+            arrangement.review_date,
+            arrangement.level,
+            0
+          )
+          // book info 减去对应 review_type 的count
+          reduce_review_type_count(book.info, new_recite_card.review_type)
+          // 更新book的info数据
+          await updateBookInfo({ id: book.id, info: book.info })
+          if (resp.success) {
+          } else {
+            messageApi.error(resp.message)
+          }
         }
       }
     } else {
@@ -934,6 +628,8 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
 
     // 延迟，等待前端的界面更新
     await delay(450)
+    console.log('next', new_recite_card)
+
     // 洗牌
     shuffleArray(recite_card_idx_queue)
     // 取出队头的卡片
@@ -955,7 +651,8 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
   const finished = () => {
     console.log('恭喜🎉 复习结束！')
     messageApi.success('恭喜🎉 复习结束！')
-    recite_card_idx_queue_ref.current = cards.map((_item, index) => index) // 恢复。如果用户想再复习一轮的话。
+    set_finished_review(true)
+    // recite_card_idx_queue_ref.current = cards.map((_item, index) => index) // 恢复。如果用户想再复习一轮的话。
     // 统计
   }
 
@@ -964,32 +661,36 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
       card={
         <>
           {contextHolder}
-          {recite_card_cache && (
-            <CardPair
-              review_type_id={review_type_id}
-              recite_card={recite_card_cache}
-              handleRemember={async () => {
-                await next('remember')
-              }}
-              handleForget={async () => {
-                await next('forget')
-              }}
-              handleVague={async () => {
-                await next('vague')
-              }}
-              handleShow={() => {
-                if (review_type_id === 2) {
-                  AudioRef.current?.play()
-                  set_audio_auto_play(true)
-                }
-              }}
-              onReady={() => {
-                set_recite_card_cache(recite_card)
-                set_audio_auto_play(false)
-              }}
-              Q={review_type_id2QA[review_type_id].Q}
-              A={review_type_id2QA[review_type_id].A}
-            />
+          {finished_review ? (
+            <FinishReview></FinishReview>
+          ) : (
+            recite_card_cache && (
+              <CardPair
+                review_type_id={review_type_id}
+                recite_card={recite_card_cache}
+                handleRemember={async () => {
+                  await next('remember')
+                }}
+                handleForget={async () => {
+                  await next('forget')
+                }}
+                handleVague={async () => {
+                  await next('vague')
+                }}
+                handleShow={() => {
+                  if (review_type_id === 2) {
+                    AudioRef.current?.play()
+                    set_audio_auto_play(true)
+                  }
+                }}
+                onReady={() => {
+                  set_recite_card_cache(recite_card)
+                  set_audio_auto_play(false)
+                }}
+                Q={review_type_id2QA[review_type_id].Q}
+                A={review_type_id2QA[review_type_id].A}
+              />
+            )
           )}
         </>
       }
@@ -1005,7 +706,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
 }
 
 const RememberCardBooksInner = () => {
-  const { book_id } = useCardData()
+  const { book } = useCardData()
   const [mode, set_mode] = useState<BookReciteModeName>('record')
   const ReciteMode2Component: { [key: string]: React.ReactNode } = {
     record: <RecordMain />,
@@ -1035,7 +736,6 @@ const RememberCardBooksInner = () => {
             trigger={['click']}
             menu={{
               items: (function () {
-                const { setting } = useCardData()
                 const items = [
                   {
                     key: -1,
@@ -1045,7 +745,7 @@ const RememberCardBooksInner = () => {
                     }
                   }
                 ]
-                setting.review_mode.forEach((rm) => {
+                book.setting.review_mode.forEach((rm) => {
                   if (rm.open) {
                     items.push({
                       key: rm.mode_id,
@@ -1076,7 +776,10 @@ const RememberCardBooksInner = () => {
       </header>
 
       <main>{ReciteMode2Component[mode]}</main>
-      <footer>book_id:{book_id}</footer>
+      <footer>
+        <p>book_id:{book.id}</p>
+        {!book.setting.arrange_review && <p>warning: your review will not be recorded!</p>}
+      </footer>
 
       <BookSettingPage ref={BookSettingPageRef}></BookSettingPage>
     </div>
