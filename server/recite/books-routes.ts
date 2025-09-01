@@ -45,7 +45,7 @@ router.post(
   ReqServerErrorFilter((req: Request, resp: Response) => {
     const book_id = parseInt(req.params.book_id)
     const updates = req.body
-    console.log(updates)
+    // console.log(updates)
     ReciteDataBaseInstance.update_book_info(book_id, updates)
     makeSuccessRep(resp)
   })

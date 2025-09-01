@@ -459,8 +459,6 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
   // reviews是前端维护的一份数据，它和card对齐。
   // 必须传递review_type_id，只针对这一个组件使用
   useEffect(() => {
-    // 队列
-    recite_card_idx_queue_ref.current = cards.map((_item, index) => index)
     ;(async function () {
       const _cards_extend: CardDataExtendType[] = await fetchCardsExtendInfo(
         cards,
@@ -588,6 +586,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
         // 如果是随便逛逛，不发送网络请求请求
         if (book.setting.arrange_review) {
           // 完成复习，写入复习数据更新
+          // 只是完成一个模式的复习，就算这个单词所有模式完成复习了？？
           const resp = await finish_review(
             parseInt(new_recite_card.id),
             new_recite_card.review_type,
@@ -716,10 +715,12 @@ const RememberCardBooksInner = () => {
     listen: <ReciteMain key={3} review_type_id={3} />
   }
   const nav = useNavigate()
-  const BookSettingPageRef = useRef<BookSettingPageAPI>(null)
+  const BookSettingPageRef = useRef<BookSettingPageAPI>(null) // 设置页面的引用
+  // 构造card_extend数据
+  useEffect(() => {}, [])
 
   // 获取 cardsExtendList
-  const ReviewSummaryRef = useRef<{ show: () => void }>()
+  const ReviewSummaryRef = useRef<{ show: () => void; troggleShow: () => void }>()
   return (
     <div className={styles['remember-card-app-container']}>
       <header>
@@ -737,7 +738,7 @@ const RememberCardBooksInner = () => {
           <IconTail
             IconName="#icon-info"
             onClick={() => {
-              ReviewSummaryRef.current?.show()
+              ReviewSummaryRef.current?.troggleShow()
             }}
             className={styles['icon']}
           ></IconTail>

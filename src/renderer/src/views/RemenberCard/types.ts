@@ -37,7 +37,27 @@ export interface BookSettingInterface {
   arrange_review: boolean // 随便翻翻还是记录用户行为
 }
 
+// review type 管理
 export type BookReciteModeName = 'read' | 'write' | 'listen' | 'record'
+export const reviewTypeId2ModeName: { [key: number]: BookReciteModeName } = {
+  1: 'read',
+  2: 'write',
+  3: 'listen',
+  4: 'record'
+}
+export const ModeName2ReviewTypeId: { [key in BookReciteModeName]?: number } = Object.entries(
+  reviewTypeId2ModeName
+).reduce(
+  (acc, [id, mode]) => {
+    acc[mode] = Number(id)
+    return acc
+  },
+  {} as { [key in BookReciteModeName]?: number }
+)
+// console.log(ModeName2ReviewTypeId)
+
+// 默认book setting
+
 export const DefaultBookSetting: BookSettingInterface = {
   audio_model: '',
   review_mode: [

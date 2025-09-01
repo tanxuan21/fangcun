@@ -13,7 +13,6 @@ import { Layout } from '../Layout/Layout'
 export const RecordMain = () => {
   const { cards, set_cards, book } = useCardData()
   const [edite_card, set_edite_card] = useState<CardDataType | null>(null)
-
   const q_ref = useRef<{ focus: () => void }>(null)
   // cards更新也要更新 edite_card?
   // 目前来看是的，否则，保存完之后会导致item的显示不更新
@@ -192,21 +191,6 @@ export const RecordMain = () => {
                 content={item.Q}
               ></CardListItem>
             </div>
-            {/* <div
-              onClick={(event) => {
-                event.stopPropagation()
-                // 如果某元素正在被编辑，这时候要失焦
-                // 否则直接跳会有bug。失焦保存数据，切换editacard写入数据会冲突。
-                if (document.activeElement instanceof HTMLElement) {
-                  document.activeElement.blur()
-                }
-
-                set_edite_card(item)
-              }}
-              className={`${styles['card-list-item']} ${edite_card?.id === item.id && styles['card-list-item-active']}`}
-            >
-              <p>{item.Q}</p>
-            </div> */}
           </Dropdown>
         ))}
       </div>

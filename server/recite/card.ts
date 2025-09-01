@@ -251,11 +251,11 @@ class ReciteCardsDatabase {
       .prepare(
         `
         UPDATE ${this.card_table_name}
-        SET review_at = ${getTodayDate()}
+        SET review_at = ?
         WHERE id = ?
         `
       )
-      .run(card_id)
+      .run(getTodayDate(), card_id)
     // 写入复习安排
     this.db
       .prepare(
