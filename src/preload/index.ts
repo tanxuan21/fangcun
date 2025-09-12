@@ -27,6 +27,9 @@ const api: API = {
   },
   SaveCSVFile: async (book_name: string, content: any) => {
     return await ipcRenderer.invoke('save-csv-file', book_name, content)
+  },
+  ImportCSVFile: async () => {
+    return await ipcRenderer.invoke('import-csv-file')
   }
 }
 

@@ -53,7 +53,17 @@ function BookItem({
             key: 'import',
             label: <>import</>,
             icon: <Icon IconName="#icon-daoru"></Icon>,
-            onClick: () => {}
+            onClick: async () => {
+              const data = await window.api.ImportCSVFile()
+              if (data) {
+                if (data.length) {
+                  if (data[0]['q'] && data[0]['a']) {
+                    add_new_card_book_info_update(book.info, data.length) // 更新 book.info 对象，然后可以写入后端
+                    await add_cards_list(book, data as { q: string; a: string }[]) // 添加
+                  } else messageApi.error('csv data format error!')
+                } else messageApi.warning('empty csv file!')
+              } else messageApi.error(`import error!`)
+            }
           },
           {
             key: 'export',
@@ -61,7 +71,7 @@ function BookItem({
             icon: <Icon IconName="#icon-export"></Icon>,
             onClick: async () => {
               const data = (await get_cards_by_book_id(book.id)).data.map((item) => {
-                return { Q: item.Q, A: item.A }
+                return { q: item.Q, a: item.A }
               })
               const csv = Papa.unparse(data)
               const path = await window.api.SaveCSVFile(book.name, csv)
@@ -103,7 +113,7 @@ function BookItem({
             const field = result.meta.fields
             if (field?.includes('a') && field.includes('q')) {
               add_new_card_book_info_update(book.info, result.data.length) // 更新 book.info 对象，然后可以写入后端
-              await add_cards_list(book, result.data as { q: string; a: string }[])
+              await add_cards_list(book, result.data as { q: string; a: string }[]) // 添加
             } else {
               // 弹出，格式错误弹框
               messageApi.error('csv data format error!')
@@ -214,39 +224,40 @@ export function RemenberCardApp() {
         </div>
       </header>
 
-      <CSVUploader
+      {/* <CSVUploader
         className={styles['new-book-csv-uploader']}
         dragOverClassName={styles['new-book-csv-uploader-dropover']}
         onReadComplete={(data) => {
           console.log('new book', data)
         }}
       >
-        <main className={styles['book-items-wapper']}>
-          {books_list.map((item, index) => {
-            return (
-              <BookItem
-                key={item.id}
-                book={item}
-                onUpdateBook={(book) => {
-                  set_books_list((prev) =>
-                    prev.map((prev_item) => (prev_item.id === book.id ? { ...book } : prev_item))
-                  )
-                }}
-                onRequestSave={async () => {
-                  updateBookInfo({ id: item.id, name: item.name, description: item.description })
-                }}
-                onDelete={(id: number) => {
-                  set_books_list((prev) =>
-                    prev.filter((item) => {
-                      return item.id !== id
-                    })
-                  )
-                }}
-              ></BookItem>
-            )
-          })}
-        </main>
-      </CSVUploader>
+
+      </CSVUploader> */}
+      <main className={styles['book-items-wapper']}>
+        {books_list.map((item, index) => {
+          return (
+            <BookItem
+              key={item.id}
+              book={item}
+              onUpdateBook={(book) => {
+                set_books_list((prev) =>
+                  prev.map((prev_item) => (prev_item.id === book.id ? { ...book } : prev_item))
+                )
+              }}
+              onRequestSave={async () => {
+                updateBookInfo({ id: item.id, name: item.name, description: item.description })
+              }}
+              onDelete={(id: number) => {
+                set_books_list((prev) =>
+                  prev.filter((item) => {
+                    return item.id !== id
+                  })
+                )
+              }}
+            ></BookItem>
+          )
+        })}
+      </main>
       {/* <DragAndDropCSVUploader></DragAndDropCSVUploader> */}
 
       <footer className={styles['books-container-footer']}></footer>
