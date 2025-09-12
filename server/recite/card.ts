@@ -1,38 +1,6 @@
 import Database from 'better-sqlite3'
 import { daysAfterToday, getTodayDate } from '../utils'
 
-// class Card {
-//   private readonly db: Database.Database
-//   constructor(db: Database.Database) {
-//     this.db = db
-//   }
-
-//   private createTable() {
-//     this.db.exec(`
-//         CREATE TABLE IF NOT EXISTS cards(
-//             id INTEGER PRIMARY KEY AUTOINCREMENT,
-//             name TEXT NOT NULL,
-//             book_id INTEGER NOT NULL,
-//             FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
-//         );
-//         CREATE TABLE IF NOT EXISTS cards_assets_set_reletion(
-//             assets_set_id INTEGER NOT NULL,
-//             cards_id INTEGER NOT NULL,
-//             type TEXT NOT NULL, -- 类型，左还是右
-//             FOREIGN KEY (assets_set_id) REFERENCES assets_set(id) ON DELETE CASCADE,
-//             FOREIGN KEY (cards) REFERENCES cards(id) ON DELETE CASCADE,
-//             PRIMARY(assets_set_id, cards_id,type)
-//         );
-
-//         -- 索引表
-//         CREATE INDEX idx_cards_relation_assets_set_id ON cards_assets_set_relation(assets_set_id);
-//         CREATE INDEX idx_cards_reletion_cards_id ON cards_assets_set_relation(cards_id);
-
-//         PRAGMA foreign_keys = ON;
-//         `)
-//   }
-// }
-
 type MemoryType = 'remember' | 'forget' | 'vague'
 interface CardRecord {
   id?: number
@@ -41,34 +9,6 @@ interface CardRecord {
   book_id: number
   created_at: string
   updated_at: string
-  review_at: string
-}
-
-interface UpdateCardRecordParams {
-  id: number
-  Q: string
-  A: string
-  book_id: number
-  updated_at: string
-  review_at: string
-}
-
-interface reviewRecord {
-  id?: number
-  remember: number
-  vague: number
-  forget: number
-  card_id: number
-  review_at: number
-}
-
-interface UpdateReviewRecordParams {
-  id: number
-  remember: number
-  vague: number
-  forget: number
-  card_id: number
-  review_at: number
 }
 
 interface UserReviewRecord {
@@ -87,6 +27,7 @@ interface UserReviewArrangement {
   type: number
   level: number
   review_date: string
+  review_at: string
 }
 
 class ReciteCardsDatabase {
@@ -111,7 +52,6 @@ class ReciteCardsDatabase {
             book_id INTEGER NOT NULL,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            review_at  TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
         );
 
@@ -136,6 +76,7 @@ class ReciteCardsDatabase {
             type INTEGER NOT NULL, -- 复习啥？听说读写四个类别。未来可能拓展新的类别
             level INTEGER NOT NULL, -- 等级。根据等级和用户的记忆情况计算后面的复习间隔
             review_date TEXT NOT NULL, -- 下次复习的时间。每次进入软件获取比这个时间前的词，就是要复习的
+            review_at TEXT NOT NULL,-- 复习的时间。标记这个 card 的 这个 type 完成今天复习了
             UNIQUE(card_id,type), -- 联合唯一约束
             FOREIGN KEY(card_id) REFERENCES ${this.card_table_name}(id) ON DELETE CASCADE
         )
@@ -149,11 +90,11 @@ class ReciteCardsDatabase {
     const info = this.db
       .prepare(
         `
-        INSERT INTO ${this.card_table_name} (Q,A,book_id,created_at,updated_at,review_at) 
-        VALUES (?,?,?,?,?,?)
+        INSERT INTO ${this.card_table_name} (Q,A,book_id,created_at,updated_at) 
+        VALUES (?,?,?,?,?)
         `
       )
-      .run(Q, A, book_id, datestr, datestr, daysAfterToday(-1))
+      .run(Q, A, book_id, datestr, datestr)
     // 添加复习安排
     // 有几种复习方案呢？这个是个变数
     return info.lastInsertRowid as number
@@ -166,12 +107,12 @@ class ReciteCardsDatabase {
     // 返回成功/失败
     const datestr = getTodayDate()
     const stmt = this.db.prepare(`
-    INSERT INTO ${this.card_table_name} (Q,A,book_id,created_at,updated_at,review_at) VALUES (?,?,?,?,?,?)
+    INSERT INTO ${this.card_table_name} (Q,A,book_id,created_at,updated_at) VALUES (?,?,?,?,?)
     `)
     try {
       const info = this.db.transaction((cards: { q: string; a: string }[]) => {
         for (const c of cards) {
-          stmt.run(c.q, c.a, book_id, datestr, datestr, daysAfterToday(-1))
+          stmt.run(c.q, c.a, book_id, datestr, datestr)
         }
         return cards.length
       })(cards_list)
@@ -188,7 +129,7 @@ class ReciteCardsDatabase {
   }
 
   // 修改卡片记录，传递进来几个字段就改几个字段
-  update_card(updates: Partial<UpdateCardRecordParams>) {
+  update_card(updates: Partial<CardRecord>) {
     if (Object.keys(updates).length === 0) {
       return false
     }
@@ -204,6 +145,11 @@ class ReciteCardsDatabase {
       .run(updates)
   }
 
+  uploadCardAudio(card_id: number, buffer: Buffer) {
+    this.db
+      .prepare(`UPDATE ${this.card_table_name} SET audio = ? WHERE id = ?;`)
+      .run(buffer, card_id)
+  }
   // 删除卡片
   delete_card(card_id) {
     this.db
@@ -246,24 +192,14 @@ class ReciteCardsDatabase {
     level: number,
     control: number
   ) {
-    // 写入card的review_at字段，标识今天的复习结束
-    this.db
-      .prepare(
-        `
-        UPDATE ${this.card_table_name}
-        SET review_at = ?
-        WHERE id = ?
-        `
-      )
-      .run(getTodayDate(), card_id)
     // 写入复习安排
     this.db
       .prepare(
         `
         INSERT OR REPLACE INTO ${this.card_review_arrangment_table_name}
-        (card_id,type,review_date,level) VALUES (?,?,?,?)`
+        (card_id,type,review_date,level,review_at) VALUES (?,?,?,?,?)`
       )
-      .run(card_id, review_type, next_review_date, level)
+      .run(card_id, review_type, next_review_date, level, getTodayDate())
     // 更新 book info
   }
 

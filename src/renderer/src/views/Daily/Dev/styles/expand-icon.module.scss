@@ -1,0 +1,16 @@
+.expand-icon {
+  transition: .3s;
+
+  border-radius: 30px;
+  font-size: 10px;
+  padding: 4px 4px;
+  color: #ccc;
+  rotate: 180deg;
+
+  &:hover {
+    background: #ddd;
+    color: #aaa;
+    rotate: 0deg;
+  }
+
+}

@@ -179,6 +179,18 @@ post `/api/recite/cards/update/:card_id`
 }
 ```
 
+### 上传卡片音频
+
+post `/api/recite/cards/upload-audio/:card_id`
+
+发送原始数据
+
+### 下载卡片音频
+
+post `api/recite/cards/download-audio/:card_id`
+
+
+
 ### 删除卡片
 
 delete `/api/recite/cards/delete/:card_id`

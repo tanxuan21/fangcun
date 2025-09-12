@@ -13,6 +13,7 @@ export interface BookInterface {
   updated_at: number
   info: BookInfoInterface
 }
+// book 相关
 export interface BookInfoInterface {
   cards_count: number
   reviews_count: {
@@ -110,7 +111,6 @@ export interface UserReviewRecord {
   vague: number
   forget: number
   card_id: number
-  review_at: string
   type: number
 }
 
@@ -120,7 +120,6 @@ export const DefaultUserReviewRecord: UserReviewRecord = {
   vague: 0,
   forget: 0,
   card_id: 0,
-  review_at: getTodayDate(),
   type: 1
 }
 
@@ -130,6 +129,7 @@ export interface UserReviewArrangement {
   type: number
   level: number
   review_date: string
+  review_at: string
 }
 
 //所有card的数据
@@ -138,7 +138,9 @@ export type CardDataType = {
   A: string
   id: string
   book_id: number
-  review_at: string
+  created_at: string
+  updated_at: string
+  audio: Blob | null
 }
 export type CardDataExtendType = CardDataType & {
   remember: number
@@ -149,4 +151,5 @@ export type CardDataExtendType = CardDataType & {
   review_progress_count: number // 复习进度
   review_arrangement: string // 复习安排
   level: number // 等级
+  review_at: string // 复习日期 // 这个日期要从review_arrangement 拿
 }

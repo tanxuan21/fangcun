@@ -1,0 +1,20 @@
+.event-class-card-container {
+  //   width: 290px;
+  border: 1px solid #bbb;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 30px;
+  border-radius: 15px;
+  position: relative;
+
+  justify-self: stretch;
+
+  &>.more {
+    position: absolute;
+    right: 13px;
+    top: 0;
+    font-size: 18px;
+    color: #aaa;
+  }
+}

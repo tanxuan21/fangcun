@@ -17,6 +17,9 @@ export const Navigator = () => {
         <Link className={styles['nav-link']} to={'/app/table/'}>
           <Icon className={styles['nav-link-icon']} IconName="#icon-biaoge"></Icon>
         </Link>
+        <Link className={styles['nav-link']} to={'/app/daily/'}>
+          <Icon className={styles['nav-link-icon']} IconName="#icon-rili"></Icon>
+        </Link>
         <span
           className={styles['nav-link']}
           onClick={() => {

@@ -3,10 +3,13 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { LoadPic, SavePic } from './SavePic'
-import { Words } from './words'
 import fs from 'fs/promises'
 import { createTerminal } from './terminal/terminal'
 import { textToSpeechGoogle } from './fetch_audio'
+import { IPCMAIN_HANDLE } from './IPCMAIN'
+import { dialog_api } from '../../type/API/dialog'
+import { IPC_Dialog } from './Dialog/Dialog'
+import { IPC_File } from './File/File'
 
 let mainWindow: null | BrowserWindow = null
 
@@ -65,16 +68,11 @@ app.whenReady().then(async () => {
 
   // create Obj
 
-  const WordsInstance = new Words()
-  //   await WordsInstance.load()
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
   ipcMain.handle('save-base64-to-file', SavePic)
   ipcMain.handle('load-pic', LoadPic)
-  ipcMain.handle('get-words-instance', () => WordsInstance)
-  ipcMain.handle('Word:load', async () => {
-    await WordsInstance.load()
-  })
+
   ipcMain.handle('readFile', async (_event, filepath: string) => {
     const str = await fs.readFile(filepath, 'utf-8')
     return str
@@ -86,7 +84,13 @@ app.whenReady().then(async () => {
   ipcMain.handle('fetch-audio', (_event, text: string, lang: string) => {
     return textToSpeechGoogle(text, lang)
   })
+
   createWindow()
+
+  if (mainWindow) {
+    IPCMAIN_HANDLE(IPC_File(mainWindow))
+    IPCMAIN_HANDLE(IPC_Dialog(mainWindow))
+  } else console.error('null mainWindow', mainWindow)
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

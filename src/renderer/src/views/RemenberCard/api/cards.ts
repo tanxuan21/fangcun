@@ -1,4 +1,4 @@
-import { getTodayDate } from '@renderer/utils'
+import { bufferObjectToBlob, daysAfterToday, getTodayDate } from '@renderer/utils'
 import {
   BookInfoInterface,
   BookInterface,
@@ -13,15 +13,25 @@ const PREFIX = `${'http://localhost:3001'}/api/recite/cards`
 
 export const get_card_by_card_id = async (card_id: number) => {
   const resp = await fetch(`${PREFIX}/get_card/${card_id}`, { method: 'GET' })
-  const data = await resp.json()
+  const text = await resp.text()
+  const data = JSON.parse(text, bufferFilter)
   return data
+}
+
+// 过滤buffer
+export const bufferFilter = (key: string, value: any) => {
+  if (value && value.type === 'Buffer' && Array.isArray(value.data)) {
+    return new Blob([new Uint8Array(value.data)], { type: 'audio/mpeg' })
+  }
+  return value
 }
 
 export const get_cards_by_book_id = async (book_id: number) => {
   const resp = await fetch(`${PREFIX}/get_book/${book_id}`, {
     method: 'GET'
   })
-  const data = await resp.json()
+  const text = await resp.text()
+  const data = JSON.parse(text, bufferFilter)
   return data
 }
 
@@ -58,23 +68,22 @@ export const add_cards_list = async (
   return await resp.json()
 }
 
-export const update_card = async (
-  card_id: number,
-  updats: Partial<{
-    id: number
-    Q: string
-    A: string
-    book_id: number
-    updated_at: string
-    review_at: string
-  }>
-) => {
+export const update_card = async (card_id: number, updats: Partial<CardDataType>) => {
   const resp = await fetch(`${PREFIX}/update/${card_id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updats)
   })
   return await resp.json()
+}
+
+export const uploadCardAudio = async (card_id: number, blob: Blob) => {
+  const res = await fetch(`${PREFIX}/upload-audio/${card_id}`, {
+    method: 'POST',
+    body: blob
+  })
+  const data = await res.json()
+  return data
 }
 
 export const delete_card = async (card_id: number, book: BookInterface) => {
@@ -207,16 +216,19 @@ export const fetchCardsExtendInfo = async (
       id: c.id,
       Q: c.Q,
       A: c.A,
-      review_at: c.review_at,
+      review_at: daysAfterToday(-1),
       book_id: c.book_id,
       remember: 0,
       vague: 0,
       forget: 0,
       review_type: review_type_id,
-      review_count: 1,
+      review_count: 1, // 今天还需复习几次，前端的辅助数据。每次构建需要根据forget/vague写入这个count。
       review_progress_count: 0,
       review_arrangement: getTodayDate(),
-      level: 1
+      created_at: c.created_at,
+      updated_at: c.updated_at,
+      level: 1,
+      audio: c.audio
     }
     // 如果是随便看看，那就不必要请求持久数据
     if (setting.arrange_review) {
@@ -248,12 +260,14 @@ export const fetchCardsExtendInfo = async (
       {
         const resp = await get_review_arrangement(parseInt(c.id), review_type_id)
         if (resp.success) {
-          const card_review_arrangement = ArrTopFilter<{ level: number; review_date: string }>(
-            resp.data,
-            { level: 1, review_date: getTodayDate() }
-          )
+          const card_review_arrangement = ArrTopFilter<{
+            level: number
+            review_date: string
+            review_at: string
+          }>(resp.data, { level: 1, review_date: getTodayDate(), review_at: daysAfterToday(-1) })
           item.level = card_review_arrangement.level
           item.review_arrangement = card_review_arrangement.review_date
+          item.review_at = card_review_arrangement.review_at
         } else {
           console.error('get review arrangement error', resp)
         }

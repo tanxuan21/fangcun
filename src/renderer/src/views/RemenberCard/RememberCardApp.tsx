@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './styles.module.scss'
-import { EditableText } from '../../components/EditableText/EditableText'
+import { EditableText } from '../../components/Editable/EditableText/EditableText'
 import { BookInterface, DefaultBookInfo, DefaultBookSetting } from './types'
 import { addBook, deleteBook, get_all_books, updateBookInfo } from './api/books'
 import { Icon, IconTail } from '@renderer/components/Icon'
 import { Dropdown, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { CSVUploader } from '@renderer/components/CSVUploader/CSVUploader'
-import { add_cards_list, add_new_card_book_info_update, rebuild_book_info } from './api/cards'
+import {
+  add_cards_list,
+  add_new_card_book_info_update,
+  get_cards_by_book_id,
+  rebuild_book_info
+} from './api/cards'
 import { alignConfig } from '@renderer/utils'
 import { NotifySpirit } from '../../components/NotifySpirit/NotifySpirit'
+import Papa from 'papaparse'
 
 const formatDateManual = (timestamp: number): string => {
   const date = new Date(timestamp)
@@ -44,12 +50,35 @@ function BookItem({
       menu={{
         items: [
           {
+            key: 'import',
+            label: <>import</>,
+            icon: <Icon IconName="#icon-daoru"></Icon>,
+            onClick: () => {}
+          },
+          {
+            key: 'export',
+            label: <>export</>,
+            icon: <Icon IconName="#icon-export"></Icon>,
+            onClick: async () => {
+              const data = (await get_cards_by_book_id(book.id)).data.map((item) => {
+                return { Q: item.Q, A: item.A }
+              })
+              const csv = Papa.unparse(data)
+              const path = await window.api.SaveCSVFile(book.name, csv)
+              if (path) {
+                messageApi.success(`save successfully! ${path}`)
+              } else {
+                messageApi.error(`save failed!`)
+              }
+            }
+          },
+          { type: 'divider' },
+          {
             key: 'delete',
-            label: <>删除</>,
+            label: <>delete</>,
             icon: <Icon IconName="#icon-shanchu"></Icon>,
             danger: true,
             onClick: () => {
-              console.log('delete', book.id)
               deleteBook(book.id)
               onDelete(book.id)
             }
@@ -126,15 +155,12 @@ export function RemenberCardApp() {
       const data = await get_all_books()
       const _books_list = data.data
       // 对齐 book 的 info，setting 字段
-
       for (let i = 0; i < _books_list.length; i++) {
-        _books_list[i].setting = alignConfig(DefaultBookSetting, JSON.parse(_books_list[i].setting))
-        const info = JSON.parse(_books_list[i].info)
-        // console.log(_books_list[i], 'reviews_count' in info, info)
+        _books_list[i].setting = alignConfig(DefaultBookSetting, _books_list[i].setting)
+        const info = _books_list[i].info
         _books_list[i].info = alignConfig(DefaultBookInfo, info)
       }
       set_books_list(_books_list)
-      console.log(_books_list)
     })()
   }, [])
   return (
@@ -168,21 +194,24 @@ export function RemenberCardApp() {
           className={styles['add-book-icon']}
         ></IconTail>
         {/* 重建book info */}
-        <IconTail
-          onClick={async () => {
-            const _books_list: BookInterface[] = []
-            for (const book of books_list) {
-              //   console.log(book)
-              const data = await rebuild_book_info(book)
-              _books_list.push(data)
-              // 更新book的数据
-              const resp = await updateBookInfo({ info: data.info, id: data.id })
-              if (!resp.success) messageApi.error(resp.message)
-            }
-            set_books_list(_books_list)
-          }}
-          IconName="#icon-zhongjian"
-        />
+        <div className={styles['header-icon-group-wrapper']}>
+          <IconTail
+            className={styles['icon']}
+            onClick={async () => {
+              const _books_list: BookInterface[] = []
+              for (const book of books_list) {
+                //   console.log(book)
+                const data = await rebuild_book_info(book)
+                _books_list.push(data)
+                // 更新book的数据
+                const resp = await updateBookInfo({ info: data.info, id: data.id })
+                if (!resp.success) messageApi.error(resp.message)
+              }
+              set_books_list(_books_list)
+            }}
+            IconName="#icon-zhongjian"
+          />
+        </div>
       </header>
 
       <CSVUploader

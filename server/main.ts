@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express'
 import cors from 'cors'
 import { exit } from 'node:process'
 import booksRouter from './recite/books-routes'
+import dailyRouter from './daily/daily-route'
 import cardsRouter from './recite/cards-routes'
 // import AssetsRouter from './assets/assets-router'
 const app = express()
@@ -18,6 +19,7 @@ app.use(express.json())
 
 app.use('/api/recite/books', booksRouter)
 app.use('/api/recite/cards', cardsRouter)
+app.use('/api/daily', dailyRouter)
 // app.use('/api/assets')
 
 app.get('/api', (req: Request, res: Response) => {

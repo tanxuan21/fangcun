@@ -7,13 +7,20 @@ import {
   fetchCardsExtendInfo,
   finish_review,
   reduce_review_type_count,
-  update_card_review
+  update_card_review,
+  uploadCardAudio
 } from './api/cards'
 import { CardsDataProvider, useCardData } from './CardsData'
 import { Audio } from '../../components/Audio/Audio'
 import { daysAfterToday, delay, fade, getTodayDate, shuffleArray } from '@renderer/utils'
 import { BookSettingPage, BookSettingPageAPI } from './BookSettingPage/BookSettingPage'
-import { BookReciteModeName, BookSettingInterface, CardDataExtendType, CardDataType } from './types'
+import {
+  BookReciteModeName,
+  BookSettingInterface,
+  CardDataExtendType,
+  CardDataType,
+  ModeName2ReviewTypeId
+} from './types'
 import { ProgressPoints } from './ProgressPoints/ProgressPoints'
 import { FinishReview } from './FinishReviewPage/FinishReviewPage'
 import { CardListItem } from './CardListItem/CardListItem'
@@ -328,6 +335,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
   // 当前的背诵卡片
   const [recite_card, set_recite_card] = useState<CardDataExtendType | null>(null)
   // 卡片缓存，为了动画的妥协
+  // 缓存是渲染在界面的数据。因为卡片移走需要一段时间，这段时间不能更新界面。所以这里需要做双缓存
   const [recite_card_cache, set_recite_card_cache] = useState<CardDataExtendType | null>(
     recite_card
   )
@@ -337,7 +345,6 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
 
   const [finished_review, set_finished_review] = useState<boolean>(false)
   // 根据review_type_id -> QA 组件的mapping
-
   const AudioRef = useRef<{ play: () => void }>(null)
   const [audio_auto_play, set_audio_auto_play] = useState<boolean>(false)
   const review_type_id2QA = {
@@ -351,7 +358,17 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
               {book.setting.audio_model && (
                 <Audio
                   ref={AudioRef}
-                  src={null}
+                  blob={recite_card_cache.audio}
+                  onLoaded={async (b) => {
+                    await uploadCardAudio(parseInt(recite_card_cache.id), b)
+                    // 要修改数组，到时候拿到recite_card时这个修改就继承了
+                    CardsExtend.forEach((c) => {
+                      if (c.id === recite_card_cache.id) {
+                        c.audio = b
+                      }
+                    })
+                    set_recite_card_cache({ ...recite_card_cache, audio: b })
+                  }}
                   content={recite_card_cache.Q}
                   voice_model={book.setting.audio_model}
                 ></Audio>
@@ -398,7 +415,18 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
               {book.setting.audio_model && (
                 <Audio
                   ref={AudioRef}
-                  src={null}
+                  blob={recite_card_cache.audio}
+                  onLoaded={async (b) => {
+                    await uploadCardAudio(parseInt(recite_card_cache.id), b)
+                    // 要修改数组，到时候拿到recite_card时这个修改就继承了
+                    CardsExtend.forEach((c) => {
+                      if (c.id === recite_card_cache.id) {
+                        c.audio = b
+                      }
+                    })
+                    // recite_card_cache 也要更新。不然，用户多次点击，播放的还是上一个
+                    set_recite_card_cache({ ...recite_card_cache, audio: b })
+                  }}
                   autoPlay={audio_auto_play}
                   content={recite_card_cache.Q}
                   voice_model={book.setting.audio_model}
@@ -421,7 +449,18 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
           {recite_card_cache && (
             <Audio
               ref={AudioRef}
-              src={null}
+              blob={recite_card_cache.audio}
+              onLoaded={async (b) => {
+                await uploadCardAudio(parseInt(recite_card_cache.id), b)
+                // 要修改数组，到时候拿到recite_card时这个修改就继承了
+                CardsExtend.forEach((c) => {
+                  if (c.id === recite_card_cache.id) {
+                    c.audio = b
+                  }
+                })
+
+                set_recite_card_cache({ ...recite_card_cache, audio: b })
+              }}
               autoPlay={audio_auto_play}
               content={recite_card_cache.Q}
               voice_model={book.setting.audio_model}
@@ -466,12 +505,13 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
         book.setting
       )
       setCardsExtend(_cards_extend)
-      // 写入背诵队列。跳过那些今天已经复习完毕的
+      // 写入背诵队列。跳过那些今天已经复习完毕的，也就是安排在今天及之前的单词，和今天没有背完的单词
+      // 同时，可能单词背一半退出了，review_count实际为 review_count。所以，在队列里要添加 review_count 次
       const _queue: number[] = []
       for (let i = 0; i < _cards_extend.length; i++) {
         const card = _cards_extend[i]
         if (card.review_arrangement <= getTodayDate() && card.review_at !== getTodayDate()) {
-          _queue.push(i)
+          for (let j = 0; j < card.review_count; j++) _queue.push(i)
         }
       }
 
@@ -481,8 +521,6 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
         (set_recite_card(_cards_extend[_queue[0]]), set_recite_card_cache(_cards_extend[_queue[0]]))
       else finished()
       recite_card_idx_queue_ref.current = _queue
-
-      console.log(_cards_extend)
     })()
     // 复习安排记录
   }, [cards, book.setting])
@@ -583,6 +621,7 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
         // 计算下次复习时间
         new_recite_card.review_at = getTodayDate() // 记得更新 card 数据 review_at 更新今天的日期为复习日
         const arrangement = ArrangeNextReviewDate(new_recite_card)
+
         // 如果是随便逛逛，不发送网络请求请求
         if (book.setting.arrange_review) {
           // 完成复习，写入复习数据更新
@@ -596,12 +635,16 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
           )
           // book info 减去对应 review_type 的count
           reduce_review_type_count(book.info, new_recite_card.review_type)
+
+          //   console.log(new_recite_card, '复习完毕！', arrangement, book)
           // 更新book的info数据
           await updateBookInfo({ id: book.id, info: book.info })
           if (resp.success) {
           } else {
             messageApi.error(resp.message)
           }
+        } else {
+          console.warn('review will not be record!')
         }
       }
     } else {
@@ -678,9 +721,10 @@ const ReciteMain = ({ review_type_id }: { review_type_id: number }) => {
                   await next('vague')
                 }}
                 handleShow={() => {
+                  // 对于一个写模式的背诵，需要显示之后才播放。
                   if (review_type_id === 2) {
-                    AudioRef.current?.play()
                     set_audio_auto_play(true)
+                    AudioRef.current?.play()
                   }
                 }}
                 onReady={() => {
@@ -716,11 +760,12 @@ const RememberCardBooksInner = () => {
   }
   const nav = useNavigate()
   const BookSettingPageRef = useRef<BookSettingPageAPI>(null) // 设置页面的引用
+
+  //   const [review_type_id,set_review_type_id]=useState<number>(1)
   // 构造card_extend数据
   useEffect(() => {}, [])
 
   // 获取 cardsExtendList
-  const ReviewSummaryRef = useRef<{ show: () => void; troggleShow: () => void }>()
   return (
     <div className={styles['remember-card-app-container']}>
       <header>
@@ -738,7 +783,7 @@ const RememberCardBooksInner = () => {
           <IconTail
             IconName="#icon-info"
             onClick={() => {
-              ReviewSummaryRef.current?.troggleShow()
+              nav('/app/remember-card-summary/' + book.id)
             }}
             className={styles['icon']}
           ></IconTail>
@@ -786,10 +831,7 @@ const RememberCardBooksInner = () => {
         </div>
       </header>
 
-      <main>
-        {ReciteMode2Component[mode]}
-        <ReviewSummary ref={ReviewSummaryRef}></ReviewSummary>
-      </main>
+      <main>{ReciteMode2Component[mode]}</main>
       <footer>
         <p>book_id:{book.id}</p>
         {!book.setting.arrange_review && <p>warning: your review will not be recorded!</p>}

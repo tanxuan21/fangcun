@@ -1,0 +1,21 @@
+.event-instant-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+  //   border: 1px solid #aaa;
+  //   border-radius: 20px;
+  height: auto;
+
+  &>section {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+  }
+
+  &>footer {
+    display: flex;
+    justify-content: space-around;
+  }
+}

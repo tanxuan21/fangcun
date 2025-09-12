@@ -22,6 +22,7 @@ $forget-red:rgb(224, 50, 19);
     display: flex;
     align-items: center;
     justify-items: center;
+    justify-content: space-between;
     padding: 0 20px;
 
     .add-book-icon {
@@ -35,6 +36,22 @@ $forget-red:rgb(224, 50, 19);
         cursor: pointer;
         color: #fff;
         background: #999;
+      }
+    }
+
+    .header-icon-group-wrapper {
+      display: flex;
+      align-items: center;
+
+      &>.icon {
+        color: #888;
+        font-size: 18px;
+        padding: 4px;
+        border-radius: 4px;
+
+        &:hover {
+          background: #00000019;
+        }
       }
     }
   }

@@ -17,11 +17,9 @@ const cards_data_content = createContext<
       book_id: number
       book: BookInterface
       cards: CardDataType[]
-      //   setting: BookSettingInterface
       set_cards: React.Dispatch<React.SetStateAction<CardDataType[]>>
       set_book: React.Dispatch<React.SetStateAction<BookInterface>>
-      //   set_setting: React.Dispatch<React.SetStateAction<BookSettingInterface>>
-      set_setting: (BookSettingInterface) => void
+      set_setting: (BookSettingInterface) => void // 这个api只是一个语法糖，可以快速的更新
     }
   | undefined
 >(undefined)
@@ -46,14 +44,17 @@ export const CardsDataProvider = ({
   //   const [setting, set_setting] = useState<BookSettingInterface>(DefaultBookSetting)
   useEffect(() => {
     ;(async function () {
+      // 获取卡片列表
       const cards_list = await get_cards_by_book_id(book_id)
       set_cards(cards_list.data)
+
       // 获取书的配置
       const book = (await get_book_by_book_id(book_id)).data
 
       // 对齐配置，书的配置可能是空配置。
-      const book_setting = alignConfig(DefaultBookSetting, JSON.parse(book.setting))
-      const book_info = alignConfig(DefaultBookInfo, JSON.parse(book.info))
+      // 这种前端填补default字段的设计可以减少后端的压力。
+      const book_setting = alignConfig(DefaultBookSetting, book.setting)
+      const book_info = alignConfig(DefaultBookInfo, book.info)
       book.setting = book_setting
       book.info = book_info
       // 设置book对象
@@ -71,7 +72,6 @@ export const CardsDataProvider = ({
         book_id,
         book,
         set_book,
-        // setting,
         set_setting
       }}
     >

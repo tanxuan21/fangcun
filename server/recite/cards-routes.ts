@@ -71,6 +71,27 @@ router.post(
     }
   })
 )
+
+router.post(
+  `/upload-audio/:card_id`,
+  ReqServerErrorFilter((req: Request, res: Response) => {
+    const card_id = parseInt(req.params.card_id)
+    if (card_id) {
+      const chunks = []
+      //   const mineType = req.headers['content-type'] || 'application/octet-stream'
+      req.on('data', (chunk) => {
+        chunks.push(chunk)
+      })
+      req.on('end', () => {
+        const buffer = Buffer.concat(chunks)
+        ReciteCardsDataBaseInstance.uploadCardAudio(card_id, buffer)
+        makeSuccessRep(res)
+      })
+    } else {
+      res.status(400).json({ success: false, massage: 'illegal card_id' })
+    }
+  })
+)
 // 查询卡片
 router.get(
   '/get_card/:card_id',

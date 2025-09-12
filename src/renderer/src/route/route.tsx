@@ -5,6 +5,9 @@ import { Home } from '@renderer/views/Home/home'
 import { RememberCardBooks } from '@renderer/views/RemenberCard/RememberCardBook'
 import { RemenberCardApp } from '@renderer/views/RemenberCard/RememberCardApp'
 import { RouteObject, useRoutes } from 'react-router-dom'
+import { ReviewSummary } from '@renderer/views/RemenberCard/ReviewSummary/ReviewSummary'
+import { DailyDev } from '@renderer/views/Daily/Dev/DailyDev'
+import { Daily } from '@renderer/views/Daily/Daily'
 
 export const route: RouteObject[] = [
   {
@@ -21,12 +24,24 @@ export const route: RouteObject[] = [
     element: <RememberCardBooks></RememberCardBooks>
   },
   {
+    path: '/app/remember-card-summary/:book_id',
+    element: <ReviewSummary></ReviewSummary>
+  },
+  {
     path: '/app/board/',
     element: <BoardReact />
   },
   {
     path: '/app/table',
     element: <Table></Table>
+  },
+  {
+    path: '/app/daily/dev/',
+    element: <DailyDev></DailyDev>
+  },
+  {
+    path: '/app/daily/',
+    element: <Daily />
   }
 ]
 

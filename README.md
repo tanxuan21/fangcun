@@ -99,3 +99,41 @@ TODO recite 模式，drawer内部的card list item 角落提示当前单词的�
 4. 不需要复习
 
 TODO 数据展示，复习情况总结
+
+
+```css
+@mixin recite-button {
+    outline: none;
+    padding: 10px;
+    border: none;
+    background: #0000;
+    cursor: pointer;
+    position: relative;
+}
+
+@mixin button-after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30%;
+    height: 3px;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+&>.remember-button {
+    @include recite-button();
+
+    &::after {
+    @include button-after();
+    background: $remember-green;
+    }
+
+    &:hover::after {
+    width: 80%;
+    }
+
+}
+```

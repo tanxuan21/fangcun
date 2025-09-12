@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+
 export const getTodayDate = () => {
   const now = new Date()
   return formatDate(now)
@@ -84,10 +86,60 @@ export function formatDate(date: Date) {
 }
 
 export function daysAfterToday(d: number): string {
-  if (d < 0) {
-    console.warn('d < 0', d)
-  }
   const date = new Date()
   date.setDate(date.getDate() + d)
   return formatDate(date)
+}
+
+// day 可以是 YYYY-MM-DD HH:mm:ss 也可能是 YYYY-MM-DD
+// 传入day字符串，返回加了d天后的日期时间。不保留 H m s
+export function daysAfterdays(day: string, d: number): string {
+  const date = dayjs(day)
+  return date.add(d, 'day').format('YYYY-MM-DD')
+}
+
+export function getDateDiffInDays(dateStr1: string, dateStr2: string): number {
+  const date1 = new Date(dateStr1)
+  const date2 = new Date(dateStr2)
+
+  // 获取时间戳（毫秒）
+  const time1 = date1.getTime()
+  const time2 = date2.getTime()
+
+  // 计算时间差（毫秒）
+  const diffInMs = time1 - time2
+
+  // 转换为天数
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+
+  return diffInDays
+}
+
+export function bufferObjectToBlob(
+  bufferObj: { type: 'Buffer'; data: number[] },
+  mimeType: string
+): Blob {
+  const uint8Array = new Uint8Array(bufferObj.data)
+  return new Blob([uint8Array], { type: mimeType })
+}
+
+export function replaceDateKeepTime(datetimeStr: string, newDateStr: string): string {
+  const old = dayjs(datetimeStr, 'YYYY-MM-DD HH:mm:ss')
+  const newDate = dayjs(newDateStr, 'YYYY-MM-DD')
+
+  return newDate
+    .hour(old.hour())
+    .minute(old.minute())
+    .second(old.second())
+    .format('YYYY-MM-DD HH:mm:ss')
+}
+export function replaceTimeKeepDate(datetimeStr: string, newTimeStr: string): string {
+  const old = dayjs(datetimeStr, 'YYYY-MM-DD HH:mm:ss')
+  const [h, m, s] = newTimeStr.split(':').map(Number)
+
+  return old
+    .hour(h || 0)
+    .minute(m || 0)
+    .second(s || 0)
+    .format('YYYY-MM-DD HH:mm:ss')
 }

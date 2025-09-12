@@ -3,12 +3,33 @@
   height: 100%;
   position: absolute;
   transition: .3s;
-  translate: -100%;
   z-index: 20;
   background: #fff;
 
-  &.review-summary-show {
-    translate: 0;
+
+
+  &>.review-summary-table {
+    border-collapse: collapse;
+    color: #444;
+
+    & thead {
+      background: #ccc;
+      height: 40px;
+
+      & th {
+
+        padding: 5px 20px;
+
+      }
+    }
+
+    & tbody {
+      background: #eeeeeeaa;
+
+      & th {
+        padding: 5px;
+      }
+    }
   }
 
 }

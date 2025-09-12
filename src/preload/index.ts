@@ -1,16 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { API } from '../../type/API'
 
 // Custom APIs for renderer
-const api = {
+const api: API = {
   saveBase64ToFile: async (base64Data, filename) => {
     return await ipcRenderer.invoke('save-base64-to-file', base64Data, filename)
   },
   loadPic: async (filemane) => {
     return await ipcRenderer.invoke('load-pic', filemane)
-  },
-  getWordsInstance: async () => {
-    return await ipcRenderer.invoke('get-words-instance')
   },
   Word_load: async () => {
     return await ipcRenderer.invoke('Word:load')
@@ -23,6 +21,12 @@ const api = {
   },
   fetchAudio: async (text: string, lang: string = 'en') => {
     return await ipcRenderer.invoke('fetch-audio', text, lang)
+  },
+  SelectFolder: async () => {
+    return await ipcRenderer.invoke('select-folder')
+  },
+  SaveCSVFile: async (book_name: string, content: any) => {
+    return await ipcRenderer.invoke('save-csv-file', book_name, content)
   }
 }
 

@@ -28,6 +28,7 @@ export const deleteBook = async (book_id: number) => {
     method: 'DELETE'
   })
   const data = await resp.json()
+
   return data
 }
 
@@ -35,12 +36,20 @@ export const get_book_by_book_id = async (book_id: number) => {
   const resp = await fetch(`${API_URL}/get/${book_id}`, {
     method: 'GET'
   })
-  return await resp.json()
+  const data = await resp.json()
+  data.data.setting = JSON.parse(data.data.setting)
+  data.data.info = JSON.parse(data.data.info)
+  return data
 }
 
 export const get_all_books = async () => {
   const resp = await fetch(`${API_URL}/get/`, {
     method: 'GET'
   })
-  return await resp.json()
+  const data = await resp.json()
+  for (const d of data.data) {
+    d.setting = JSON.parse(d.setting)
+    d.info = JSON.parse(d.info)
+  }
+  return data
 }
