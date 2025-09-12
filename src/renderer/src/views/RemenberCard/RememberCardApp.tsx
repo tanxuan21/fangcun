@@ -58,7 +58,8 @@ function BookItem({
               if (data) {
                 if (data.length) {
                   if (data[0]['q'] && data[0]['a']) {
-                    add_new_card_book_info_update(book.info, data.length) // 更新 book.info 对象，然后可以写入后端
+                    add_new_card_book_info_update(book.info, data.length) // 更新 book.info 对象数据
+                    onUpdateBook({ ...book, info: { ...book.info } }) // 更新 info 对象，react 重新渲染组件
                     await add_cards_list(book, data as { q: string; a: string }[]) // 添加
                   } else messageApi.error('csv data format error!')
                 } else messageApi.warning('empty csv file!')
