@@ -10,12 +10,12 @@ import { IPCMAIN_HANDLE } from './IPCMAIN'
 import { dialog_api } from '../../type/API/dialog'
 import { IPC_Dialog } from './Dialog/Dialog'
 import { IPC_File } from './File/File'
-
-let mainWindow: null | BrowserWindow = null
+import { generalCSP, IPC_Setting } from './Setting/Setting'
+import { GetMainWindow, SetMainWindow } from './MainWindow'
 
 function createWindow(): void {
   // Create the browser window.
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     title: 'fangcun',
@@ -28,6 +28,17 @@ function createWindow(): void {
       additionalArguments: []
     }
   })
+  SetMainWindow(mainWindow)
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [generalCSP()]
+      }
+    })
+  })
+
   mainWindow.setMenu(null)
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -48,6 +59,7 @@ function createWindow(): void {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
+    // 处理index.html
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
@@ -66,7 +78,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // create Obj
+  const mainWindow = GetMainWindow() // 获取MainWindow
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
@@ -91,6 +103,7 @@ app.whenReady().then(async () => {
     IPCMAIN_HANDLE(IPC_File(mainWindow))
     IPCMAIN_HANDLE(IPC_Dialog(mainWindow))
   } else console.error('null mainWindow', mainWindow)
+  IPCMAIN_HANDLE(await IPC_Setting()) // 软件设置 API
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

@@ -1,7 +1,12 @@
 import styles from './styles.module.scss'
 import { Link } from 'react-router-dom'
 import { Icon } from '../Icon'
-export const Navigator = () => {
+import { SettingPage } from '../../views/Setting/Setting'
+
+interface props {
+  ShowSettingPage: () => void
+}
+export const Navigator = ({ ShowSettingPage }: props) => {
   return (
     <div className={styles['nav-container']}>
       <div className={styles['nav-wapper-upper']}>
@@ -20,6 +25,9 @@ export const Navigator = () => {
         <Link className={styles['nav-link']} to={'/app/daily/'}>
           <Icon className={styles['nav-link-icon']} IconName="#icon-rili"></Icon>
         </Link>
+        <Link className={styles['nav-link']} to={'/component/'}>
+          <Icon IconName="#icon-kaifazujian" className={styles['nav-link-icon']}></Icon>
+        </Link>
         <span
           className={styles['nav-link']}
           onClick={() => {
@@ -31,7 +39,12 @@ export const Navigator = () => {
       </div>
 
       <div className={styles['nav-wapper-down']}>
-        <span className={styles['nav-link']}>
+        <span
+          onClick={() => {
+            ShowSettingPage()
+          }}
+          className={styles['nav-link']}
+        >
           <Icon className={styles['nav-link-icon']} IconName="#icon-shezhi"></Icon>
         </span>
       </div>

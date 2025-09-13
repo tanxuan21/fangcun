@@ -9,10 +9,10 @@ import {
 } from '../types'
 import { updateBookInfo } from './books'
 
-const PREFIX = `${'http://localhost:3001'}/api/recite/cards`
+const PREFIX = async () => `${await window.api.getItem('API_URL')}/api/recite/cards`
 
 export const get_card_by_card_id = async (card_id: number) => {
-  const resp = await fetch(`${PREFIX}/get_card/${card_id}`, { method: 'GET' })
+  const resp = await fetch(`${await PREFIX()}/get_card/${card_id}`, { method: 'GET' })
   const text = await resp.text()
   const data = JSON.parse(text, bufferFilter)
   return data
@@ -27,7 +27,7 @@ export const bufferFilter = (key: string, value: any) => {
 }
 
 export const get_cards_by_book_id = async (book_id: number) => {
-  const resp = await fetch(`${PREFIX}/get_book/${book_id}`, {
+  const resp = await fetch(`${await PREFIX()}/get_book/${book_id}`, {
     method: 'GET'
   })
   const text = await resp.text()
@@ -36,7 +36,7 @@ export const get_cards_by_book_id = async (book_id: number) => {
 }
 
 export const add_card = async (Q: string, A: string, book: BookInterface) => {
-  const resp = await fetch(`${PREFIX}/add/`, {
+  const resp = await fetch(`${await PREFIX()}/add/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -55,7 +55,7 @@ export const add_cards_list = async (
   book: BookInterface,
   cards_list: { q: string; a: string }[]
 ) => {
-  const resp = await fetch(`${PREFIX}/add/multiple/`, {
+  const resp = await fetch(`${await PREFIX()}/add/multiple/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -69,7 +69,7 @@ export const add_cards_list = async (
 }
 
 export const update_card = async (card_id: number, updats: Partial<CardDataType>) => {
-  const resp = await fetch(`${PREFIX}/update/${card_id}`, {
+  const resp = await fetch(`${await PREFIX()}/update/${card_id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updats)
@@ -78,7 +78,7 @@ export const update_card = async (card_id: number, updats: Partial<CardDataType>
 }
 
 export const uploadCardAudio = async (card_id: number, blob: Blob) => {
-  const res = await fetch(`${PREFIX}/upload-audio/${card_id}`, {
+  const res = await fetch(`${await PREFIX()}/upload-audio/${card_id}`, {
     method: 'POST',
     body: blob
   })
@@ -87,7 +87,7 @@ export const uploadCardAudio = async (card_id: number, blob: Blob) => {
 }
 
 export const delete_card = async (card_id: number, book: BookInterface) => {
-  const resp = await fetch(`${PREFIX}/delete/${card_id}`, {
+  const resp = await fetch(`${await PREFIX()}/delete/${card_id}`, {
     method: 'DELETE'
   })
   await updateBookInfo({ id: book.id, info: book.info })
@@ -109,7 +109,7 @@ export const get_card_review = async (
   }
   const queryString = '?' + params.toString()
 
-  const resp = await fetch(`${PREFIX}/review_get/${card_id}${queryString}`, {
+  const resp = await fetch(`${await PREFIX()}/review_get/${card_id}${queryString}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -138,7 +138,7 @@ export const update_card_review = async (
   memory_type: 'remember' | 'vague' | 'forget',
   review_type: number
 ) => {
-  const resp = await fetch(`${PREFIX}/review_update/${card_id}`, {
+  const resp = await fetch(`${await PREFIX()}/review_update/${card_id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -158,7 +158,7 @@ export const finish_review = async (
   level: number,
   control: number
 ) => {
-  const resp = await fetch(`${PREFIX}/finish_review/${card_id}`, {
+  const resp = await fetch(`${await PREFIX()}/finish_review/${card_id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -180,7 +180,7 @@ export const get_review_arrangement = async (card_id: number, review_type?: numb
     params.append('review_type', review_type.toString())
   }
   const queryString = '?' + params.toString()
-  const resp = await fetch(`${PREFIX}/review_arrangement/${card_id}${queryString}`, {
+  const resp = await fetch(`${await PREFIX()}/review_arrangement/${card_id}${queryString}`, {
     method: 'GET'
   })
   return (await resp.json()) as {

@@ -1,0 +1,22 @@
+.fangcun-menu-page-container {
+  position: fixed;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  overflow: auto;
+  background: #fff;
+  padding: 8px 8px;
+  z-index: 1e8;
+}
+
+
+.fangcun-menu-item-container {
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+
+  &:hover {
+    background: #00000018;
+  }
+}

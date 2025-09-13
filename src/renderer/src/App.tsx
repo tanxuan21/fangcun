@@ -1,4 +1,5 @@
 import { MainLayOut } from './views/Layout/MainLayOut'
+import { SettingPage } from './views/Setting/Setting'
 
 function App(): React.JSX.Element {
   return (

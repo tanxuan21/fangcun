@@ -16,6 +16,8 @@ import {
 import { alignConfig } from '@renderer/utils'
 import { NotifySpirit } from '../../components/NotifySpirit/NotifySpirit'
 import Papa from 'papaparse'
+import DailyTrigger from '../../components/Trigger/DailyTrigger'
+import dayjs from 'dayjs'
 
 const formatDateManual = (timestamp: number): string => {
   const date = new Date(timestamp)
@@ -54,13 +56,15 @@ function BookItem({
             label: <>import</>,
             icon: <Icon IconName="#icon-daoru"></Icon>,
             onClick: async () => {
-              const data = await window.api.ImportCSVFile()
+              const data = await window.api.ImportCSVFile() // 导入csv
               if (data) {
                 if (data.length) {
                   if (data[0]['q'] && data[0]['a']) {
-                    add_new_card_book_info_update(book.info, data.length) // 更新 book.info 对象数据
-                    onUpdateBook({ ...book, info: { ...book.info } }) // 更新 info 对象，react 重新渲染组件
-                    await add_cards_list(book, data as { q: string; a: string }[]) // 添加
+                    const resp = await add_cards_list(book, data as { q: string; a: string }[]) // 添加
+                    if (resp.success) {
+                      add_new_card_book_info_update(book.info, data.length) // 更新 book.info 对象数据
+                      onUpdateBook({ ...book, info: { ...book.info } }) // 更新 info 对象，react 重新渲染组件
+                    } else messageApi.error(resp.message)
                   } else messageApi.error('csv data format error!')
                 } else messageApi.warning('empty csv file!')
               } else messageApi.error(`import error!`)
@@ -113,8 +117,11 @@ function BookItem({
             // 检查是否格式正确：
             const field = result.meta.fields
             if (field?.includes('a') && field.includes('q')) {
-              add_new_card_book_info_update(book.info, result.data.length) // 更新 book.info 对象，然后可以写入后端
-              await add_cards_list(book, result.data as { q: string; a: string }[]) // 添加
+              const resp = await add_cards_list(book, result.data as { q: string; a: string }[]) // 添加
+              if (resp.success) {
+                add_new_card_book_info_update(book.info, result.data.length) // 更新 book.info 对象，然后可以写入后端
+                onUpdateBook({ ...book, info: { ...book.info } }) // 更新 info 对象，react 重新渲染组件
+              } else messageApi.error(resp.message)
             } else {
               // 弹出，格式错误弹框
               messageApi.error('csv data format error!')
@@ -162,21 +169,26 @@ export function RemenberCardApp() {
   const [books_list, set_books_list] = useState<BookInterface[]>([])
   const [messageApi, contextHolder] = message.useMessage()
   useEffect(() => {
+    // 获取数据
     ;(async function () {
       const data = await get_all_books()
       const _books_list = data.data
-      // 对齐 book 的 info，setting 字段
+      // 对齐 book 的 info，setting 字段。
       for (let i = 0; i < _books_list.length; i++) {
         _books_list[i].setting = alignConfig(DefaultBookSetting, _books_list[i].setting)
-        const info = _books_list[i].info
-        _books_list[i].info = alignConfig(DefaultBookInfo, info)
+        _books_list[i].info = alignConfig(DefaultBookInfo, _books_list[i].info)
       }
-      set_books_list(_books_list)
+      set_books_list(_books_list) // 设置给前端state以供渲染
     })()
   }, [])
   return (
     <div className={styles['books-container']}>
       {contextHolder}
+      <DailyTrigger
+        onTrigger={() => {
+          console.log('trigger', dayjs().format('YYYY-MM-DD HH:mm:ss'))
+        }}
+      ></DailyTrigger>
       <header className={styles['books-container-header']}>
         {/* 添加新书 */}
         <IconTail
@@ -224,18 +236,8 @@ export function RemenberCardApp() {
           />
         </div>
       </header>
-
-      {/* <CSVUploader
-        className={styles['new-book-csv-uploader']}
-        dragOverClassName={styles['new-book-csv-uploader-dropover']}
-        onReadComplete={(data) => {
-          console.log('new book', data)
-        }}
-      >
-
-      </CSVUploader> */}
       <main className={styles['book-items-wapper']}>
-        {books_list.map((item, index) => {
+        {books_list.map((item, _index) => {
           return (
             <BookItem
               key={item.id}
@@ -259,8 +261,6 @@ export function RemenberCardApp() {
           )
         })}
       </main>
-      {/* <DragAndDropCSVUploader></DragAndDropCSVUploader> */}
-
       <footer className={styles['books-container-footer']}></footer>
     </div>
   )

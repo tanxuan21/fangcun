@@ -1,9 +1,11 @@
 import { BookInterface } from '../types'
 
-const API_URL = 'http://localhost:3001/api/recite/books'
-
+const PREFIX = async () => {
+  const url = await window.api.getItem('API_URL')
+  return `${url}/api/recite/books`
+}
 export const updateBookInfo = async (bookitem: Partial<BookInterface> & { id: number }) => {
-  const resp = await fetch(`${API_URL}/update/${bookitem.id}`, {
+  const resp = await fetch(`${await PREFIX()}/update/${bookitem.id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bookitem)
@@ -12,7 +14,7 @@ export const updateBookInfo = async (bookitem: Partial<BookInterface> & { id: nu
 }
 
 export const addBook = async () => {
-  const resp = await fetch(`${API_URL}/add/`, {
+  const resp = await fetch(`${await PREFIX()}/add/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -24,7 +26,7 @@ export const addBook = async () => {
 }
 
 export const deleteBook = async (book_id: number) => {
-  const resp = await fetch(`${API_URL}/delete/${book_id}`, {
+  const resp = await fetch(`${await PREFIX()}/delete/${book_id}`, {
     method: 'DELETE'
   })
   const data = await resp.json()
@@ -33,7 +35,7 @@ export const deleteBook = async (book_id: number) => {
 }
 
 export const get_book_by_book_id = async (book_id: number) => {
-  const resp = await fetch(`${API_URL}/get/${book_id}`, {
+  const resp = await fetch(`${await PREFIX()}/get/${book_id}`, {
     method: 'GET'
   })
   const data = await resp.json()
@@ -43,7 +45,7 @@ export const get_book_by_book_id = async (book_id: number) => {
 }
 
 export const get_all_books = async () => {
-  const resp = await fetch(`${API_URL}/get/`, {
+  const resp = await fetch(`${await PREFIX()}/get/`, {
     method: 'GET'
   })
   const data = await resp.json()

@@ -140,6 +140,7 @@ export const DayViewPage = () => {
     const endOfDay = dayjs(daystr).endOf('day').format('YYYY-MM-DD HH:mm:ss')
     const resp = await EventInstantAPI.get(`?start_time_gte=${startOfDay}&end_time_lte=${endOfDay}`)
     setEventInstantList(resp.data)
+    console.log(resp.data)
   }
   useEffect(() => {
     ;(async function () {

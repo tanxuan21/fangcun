@@ -8,41 +8,45 @@ import { RouteObject, useRoutes } from 'react-router-dom'
 import { ReviewSummary } from '@renderer/views/RemenberCard/ReviewSummary/ReviewSummary'
 import { DailyDev } from '@renderer/views/Daily/Dev/DailyDev'
 import { Daily } from '@renderer/views/Daily/Daily'
+import { ComponentRoute } from './ComponentRoute'
 
 export const route: RouteObject[] = [
-  {
-    path: '/',
-    element: <Home></Home>
-  },
-  { path: '*', element: <NotFound></NotFound> },
-  {
-    path: '/app/remember-card/',
-    element: <RemenberCardApp></RemenberCardApp>
-  },
-  {
-    path: '/app/remember-card/:book_id',
-    element: <RememberCardBooks></RememberCardBooks>
-  },
-  {
-    path: '/app/remember-card-summary/:book_id',
-    element: <ReviewSummary></ReviewSummary>
-  },
-  {
-    path: '/app/board/',
-    element: <BoardReact />
-  },
-  {
-    path: '/app/table',
-    element: <Table></Table>
-  },
-  {
-    path: '/app/daily/dev/',
-    element: <DailyDev></DailyDev>
-  },
-  {
-    path: '/app/daily/',
-    element: <Daily />
-  }
+  ...[
+    {
+      path: '/',
+      element: <Home></Home>
+    },
+    { path: '*', element: <NotFound></NotFound> },
+    {
+      path: '/app/remember-card/',
+      element: <RemenberCardApp></RemenberCardApp>
+    },
+    {
+      path: '/app/remember-card/:book_id',
+      element: <RememberCardBooks></RememberCardBooks>
+    },
+    {
+      path: '/app/remember-card-summary/:book_id',
+      element: <ReviewSummary></ReviewSummary>
+    },
+    {
+      path: '/app/board/',
+      element: <BoardReact />
+    },
+    {
+      path: '/app/table',
+      element: <Table></Table>
+    },
+    {
+      path: '/app/daily/dev/',
+      element: <DailyDev></DailyDev>
+    },
+    {
+      path: '/app/daily/',
+      element: <Daily />
+    }
+  ],
+  ...ComponentRoute
 ]
 
 export const Route = () => {

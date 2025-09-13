@@ -2,7 +2,7 @@ import axios from 'axios'
 import { EventInstant } from 'type/daily'
 
 const http = axios.create({
-  baseURL: 'http://localhost:3001/api/daily',
+  baseURL: `${await window.api.getItem('API_URL')}/api/daily`,
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json'
