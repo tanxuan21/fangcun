@@ -30,7 +30,7 @@ export const MenuDemo = () => {
                   {Array(10)
                     .fill(0)
                     .map((item, idx) => (
-                      <MenuItem key={idx} id="0">
+                      <MenuItem key={idx} id={idx + ''}>
                         菜单项 {idx}
                       </MenuItem>
                     ))}

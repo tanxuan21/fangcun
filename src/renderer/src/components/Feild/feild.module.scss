@@ -1,0 +1,139 @@
+.feild-state-tag-menu-item {
+  display: grid;
+  grid-template-columns: 20px 1fr 20px;
+  align-items: center;
+  $size: 15px;
+  gap: 4px;
+
+  justify-items: center;
+  align-items: center;
+
+  &>.state-tag-color {
+    display: block;
+    align-self: center;
+    width: $size;
+    height: $size;
+    border-radius: 100px;
+  }
+
+  &>.confirm-icon {
+    background: #00c247;
+    color: #fff;
+    border-radius: 100px;
+    width: $size + 2px;
+    height: $size + 2px;
+  }
+
+}
+
+.feild-item-container {
+  display: grid;
+  grid-template-columns: 80px 60px 50px 1fr;
+  align-items: center;
+  justify-items: center;
+  gap: 10px;
+
+  &>:nth-child(3) {
+    grid-column: 4;
+  }
+}
+
+
+.feild-number-container {
+  display: grid;
+  grid-template-columns: 80px 40px 80px;
+  gap: 10px;
+  align-items: center;
+}
+
+
+.feild-state {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  padding: 4px 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  align-self: center;
+  justify-self: center;
+}
+
+.feild-state-tag-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  grid-column: 2;
+
+  &>.feild-state-tag-editor-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    &>.icon-delete {
+      color: rgba(224, 6, 6, 0.534);
+      transition: .2s;
+      $size: 25px;
+      width: $size;
+      height: $size;
+      border-radius: 5px;
+
+      &:hover {
+        background: rgba(224, 6, 6, 0.671);
+        color: #fff;
+      }
+    }
+  }
+
+
+}
+
+.feild-state-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  & .feild-state-innercontainer {
+    display: grid;
+    grid-template-columns: 80px 20px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &>.feild-state-editor-list-container {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+  }
+}
+
+.feild-container-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &>.feild-array-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &>.feild-array-item {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+
+      &>.icon-more-option {
+        color: #bbb;
+        $size: 23px;
+        width: $size;
+        height: $size;
+        border-radius: 5px;
+        font-size: 15px;
+
+        &:hover {
+          background-color: #ddd;
+          color: #888;
+        }
+      }
+    }
+  }
+}

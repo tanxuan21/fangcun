@@ -12,6 +12,7 @@ import { IPC_Dialog } from './Dialog/Dialog'
 import { IPC_File } from './File/File'
 import { generalCSP, IPC_Setting } from './Setting/Setting'
 import { GetMainWindow, SetMainWindow } from './MainWindow'
+import { ListenUpdateEvent } from './AutoUpdater/AutoUpdater'
 
 function createWindow(): void {
   // Create the browser window.
@@ -78,6 +79,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  createWindow()
   const mainWindow = GetMainWindow() // 获取MainWindow
 
   // IPC test
@@ -97,11 +99,10 @@ app.whenReady().then(async () => {
     return textToSpeechGoogle(text, lang)
   })
 
-  createWindow()
-
   if (mainWindow) {
     IPCMAIN_HANDLE(IPC_File(mainWindow))
     IPCMAIN_HANDLE(IPC_Dialog(mainWindow))
+    ListenUpdateEvent(mainWindow)
   } else console.error('null mainWindow', mainWindow)
   IPCMAIN_HANDLE(await IPC_Setting()) // 软件设置 API
 

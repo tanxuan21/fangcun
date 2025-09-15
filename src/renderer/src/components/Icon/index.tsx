@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react'
-
+import styles from './icon-style.module.scss'
 type IconProps = {
   IconName: string
   size?: number | string
@@ -31,5 +31,24 @@ export const IconTail = ({ IconName, style, className, onClick }: IconProps) => 
     >
       <Icon IconName={IconName}></Icon>
     </div>
+  )
+}
+
+export const ExpandIconTail = ({
+  style,
+  className,
+  expand
+}: {
+  style?: React.CSSProperties
+  className?: string
+  expand: boolean
+  expandDirection?: 'colum' | 'horizon'
+}) => {
+  return (
+    <IconTail
+      className={`${styles['icon-expand-tail']} ${expand ? styles['expand'] : ''} ${className}`}
+      style={style}
+      IconName="#icon-zhankai4"
+    ></IconTail>
   )
 }

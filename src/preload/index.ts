@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { API } from '../../type/API'
 import { SettingExpose } from './Setting/Setting'
+import { AutoUpdaterExpose } from './AutoUpdater/AutoUpdater'
 
 // Custom APIs for renderer
 const api: API = {
@@ -34,7 +35,8 @@ const api: API = {
       return await ipcRenderer.invoke('import-csv-file')
     }
   },
-  ...SettingExpose()
+  ...SettingExpose(),
+  ...AutoUpdaterExpose()
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

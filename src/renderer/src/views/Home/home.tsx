@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import styles from './styles.module.scss'
+import { Button } from 'antd'
 export function Home() {
   const nav = useNavigate()
 
@@ -44,39 +45,13 @@ export function Home() {
       </svg>
 
       <div className={styles['test-container']}>
-        <div ref={boxRef} className={`${styles['box']} ${styles[box_state]}`}></div>
-        <button
+        <Button
           onClick={() => {
-            if (box_state === 'leave') {
-              // 这里。禁用transition
-              const box = boxRef.current
-              if (box) {
-                box.style.transition = 'none'
-                requestAnimationFrame(() => {
-                  set_box_state('ready')
-                })
-              }
-            } else if (box_state === 'ready') {
-              const box = boxRef.current
-              if (box) {
-                box.style.transition = ''
-                requestAnimationFrame(() => {
-                  set_box_state('show')
-                })
-              }
-            } else if (box_state === 'show') {
-              const box = boxRef.current
-              if (box) {
-                box.style.transition = ''
-                requestAnimationFrame(() => {
-                  set_box_state('leave')
-                })
-              }
-            }
+            window.api.restartApp()
           }}
         >
-          切换状态
-        </button>
+          重启软件
+        </Button>
       </div>
     </div>
   )

@@ -89,8 +89,6 @@ export const IPC_Setting = async () => {
   return {
     'get-item': <K extends keyof SettingInterface>(event, key: K) => {
       const value = SettingInstance.getItem(key)
-      console.log(key, value)
-
       return value
     },
     'set-item': async <K extends keyof SettingInterface>(

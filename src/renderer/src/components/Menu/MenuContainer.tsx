@@ -9,6 +9,10 @@ interface props {
   ui: ReactNode
   children: ReactNode
   className?: string
+  onMenuHide?: () => void // 菜单隐藏，这个是当隐藏动画开始时
+  onMenuUnMount?: () => void // 隐藏动画结束后，菜单dom移除
+  onMenuOpen?: () => void // 菜单打开调用，打开动画结束时
+  onMenuMount?: () => void // 菜单dom挂载时
   Styles?: React.CSSProperties
 }
 
@@ -18,6 +22,10 @@ export const MenuContainer: React.FC<props> = ({
   ui,
   children,
   className,
+  onMenuHide,
+  onMenuUnMount,
+  onMenuMount,
+  onMenuOpen,
   Styles
 }: props) => {
   //   const { openMenuId, setOpenMenuId } = useContext(MenuContext)
@@ -106,6 +114,7 @@ export const MenuContainer: React.FC<props> = ({
   useEffect(() => {
     if (isOpen) {
       setVisible(true)
+      onMenuMount && onMenuMount()
     }
   }, [isOpen])
 
@@ -135,12 +144,14 @@ export const MenuContainer: React.FC<props> = ({
         el.addEventListener('transitionend', (event: TransitionEvent) => {
           if (event.propertyName === 'height') {
             setAnimation(false)
+            onMenuOpen && onMenuOpen()
           }
         })
         // 不要让滚动事件被window截获
         el.addEventListener('wheel', (evet) => {
           evet.stopPropagation()
         })
+        // 下一帧开始，正式播放展开动画
         requestAnimationFrame(() => {
           ;((el.style.height = `${height}px`), (el.style.opacity = '1'))
         })
@@ -154,6 +165,7 @@ export const MenuContainer: React.FC<props> = ({
       if (event.propertyName === 'height') {
         setVisible(false)
         setAnimation(false)
+        onMenuUnMount && onMenuUnMount() // 菜单dom卸载调用
       }
     }
     if (el && !isOpen) {
@@ -161,6 +173,7 @@ export const MenuContainer: React.FC<props> = ({
       el.addEventListener('transitionend', handleTransitionEnd)
       el.addEventListener('transitionstart', (event: TransitionEvent) => {
         if (event.propertyName === 'height') {
+          onMenuHide && onMenuHide()
           setAnimation(true)
         }
       })

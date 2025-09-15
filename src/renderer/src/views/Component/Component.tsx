@@ -6,6 +6,7 @@ import { ItemType, MenuItemType } from 'antd/es/menu/interface'
 import { MenuContainer } from '@renderer/components/Menu/MenuContainer'
 import { MenuDemo } from '@renderer/components/Menu/Demo'
 import { ReactNode, useState } from 'react'
+import { FeildDemo } from '@renderer/components/Feild/Demo'
 
 export const ComponentHome = () => {
   const items: (ItemType<MenuItemType> & Record<string, any>)[] = [
@@ -85,6 +86,11 @@ export const ComponentHome = () => {
           element: <MenuDemo></MenuDemo>
         }
       ]
+    },
+    {
+      key: 'feild',
+      label: 'Feild',
+      children: [{ key: 'feild-instant', label: 'feild', element: <FeildDemo></FeildDemo> }]
     }
   ]
 
