@@ -14,20 +14,13 @@ import { CardsDataProvider, useCardData } from './CardsData'
 import { Audio } from '../../components/Audio/Audio'
 import { daysAfterToday, delay, fade, getTodayDate, shuffleArray } from '@renderer/utils'
 import { BookSettingPage, BookSettingPageAPI } from './BookSettingPage/BookSettingPage'
-import {
-  BookReciteModeName,
-  BookSettingInterface,
-  CardDataExtendType,
-  CardDataType,
-  ModeName2ReviewTypeId
-} from './types'
+import { BookReciteModeName, BookSettingInterface, CardDataExtendType, CardDataType } from './types'
 import { ProgressPoints } from './ProgressPoints/ProgressPoints'
 import { FinishReview } from './FinishReviewPage/FinishReviewPage'
 import { CardListItem } from './CardListItem/CardListItem'
 import { Layout } from './Layout/Layout'
 import { RecordMain } from './RecordMain/RecoreMain'
 import { updateBookInfo } from './api/books'
-import { ReviewSummary } from './ReviewSummary/ReviewSummary'
 
 // 卡片对组件
 // 复习使用

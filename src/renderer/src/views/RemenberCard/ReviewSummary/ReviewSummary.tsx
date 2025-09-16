@@ -8,6 +8,8 @@ import { get_book_by_book_id } from '../api/books'
 import { Dropdown } from 'antd'
 import { ItemType } from 'antd/es/menu/interface'
 import { getDateDiffInDays, getTodayDate } from '@renderer/utils'
+import { IconTail } from '../../../components/Icon/index'
+import { TagsHeader } from '../../../components/TagHeader/TagHeader'
 
 const filterFeilds = [
   'review_progress_count',
@@ -36,75 +38,73 @@ export const ReviewSummary = forwardRef(({}: props, ref) => {
       const book = (await get_book_by_book_id(parseInt(book_id as string))).data
       set_book(book)
       const cardsExtendList = await fetchCardsExtendInfo(cards, review_type_id, book.setting)
-      //   console.log(cardsExtendList)
+      console.log(cards)
 
       setCardsExtendData(cardsExtendList)
     })()
   }, [review_type_id])
   return (
     <div className={`${styles['review-summary-container']}`}>
-      <span
-        onClick={() => {
-          nav(-1)
-        }}
-      >
-        返回
-      </span>
-      <Dropdown
-        menu={{
-          items: (function () {
-            const items: ItemType[] = []
-            book
-              ? book.setting.review_mode.forEach((rm) => {
-                  if (rm.open) {
-                    items.push({
-                      key: rm.mode_id,
-                      label: rm.mode_name,
-                      onClick: () => {
-                        set_review_type_id(rm.mode_id)
-                      }
-                    })
-                  }
-                })
-              : ''
-            return items
-          })()
-        }}
-      >
-        <span>{reviewTypeId2ModeName[review_type_id]} mode</span>
-      </Dropdown>
+      <header>
+        <IconTail
+          IconName="#icon-zhankai"
+          style={{ rotate: '90deg' }}
+          className={styles['icon']}
+          onClick={() => {
+            nav(-1)
+          }}
+        ></IconTail>
+        <TagsHeader
+          onSelected={(id) => {
+            set_review_type_id(parseInt(id))
+          }}
+          tags={(function () {
+            const tags: { tag: string; id: string }[] = []
+            book?.setting.review_mode.forEach((rm) => {
+              if (rm.open) {
+                tags.push({ tag: rm.mode_name, id: rm.mode_id + '' })
+              }
+            })
+            return tags
+          })()}
+        ></TagsHeader>
+      </header>
 
-      {cardsExtendData.length && (
-        <table className={styles['review-summary-table']}>
-          <thead>
-            <tr>
-              {Object.keys(cardsExtendData[0])
-                .filter((c) => !filterFeilds.includes(c))
-                .map((c, i) => {
-                  return <th key={i}>{c}</th>
-                })}
-            </tr>
-          </thead>
-          <tbody>
-            {cardsExtendData.map((c) => {
-              return (
-                <tr key={c.id}>
-                  {Object.keys(c)
+      <main>
+        <section>
+          {cardsExtendData.length && (
+            <table className={styles['review-summary-table']}>
+              <thead>
+                <tr>
+                  {Object.keys(cardsExtendData[0])
                     .filter((c) => !filterFeilds.includes(c))
-                    .map((attr, i) => {
-                      let v = c[attr]
-                      if (['review_at', 'review_arrangement'].includes(attr)) {
-                        v = getDateDiffInDays(v, getTodayDate())
-                        v = v === 0 ? '今天' : v > 0 ? `${v}天后` : `${Math.abs(v)}天前`
-                      }
-                      return <th key={i}>{v}</th>
+                    .map((c, i) => {
+                      return <th key={i}>{c}</th>
                     })}
                 </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      )}
+              </thead>
+              <tbody>
+                {cardsExtendData.map((c) => {
+                  return (
+                    <tr key={c.id}>
+                      {Object.keys(c)
+                        .filter((c) => !filterFeilds.includes(c))
+                        .map((attr, i) => {
+                          let v = c[attr]
+                          if (['review_at', 'review_arrangement'].includes(attr)) {
+                            v = getDateDiffInDays(v, getTodayDate())
+                            v = v === 0 ? '今天' : v > 0 ? `${v}天后` : `${Math.abs(v)}天前`
+                          }
+                          return <th key={i}>{v}</th>
+                        })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+      </main>
     </div>
   )
 })
