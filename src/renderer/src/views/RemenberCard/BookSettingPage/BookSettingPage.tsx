@@ -14,7 +14,12 @@ export interface BookSettingPageAPI {
 }
 
 interface props {}
-
+export const model_dict = {
+  en: ['en-US-AvaNeural', 'en-US-AndrewNeural'],
+  ko: ['ko-KR-InJoonNeural', 'ko-KR-SunHiNeural'],
+  hk: ['zh-HK-HiuGaaiNeural', 'zh-HK-WanLungNeural'],
+  jp: ['ja-JP-KeitaNeural', 'ja-JP-NanamiNeural']
+}
 export const BookSettingPage = forwardRef(({}: props, ref) => {
   const { set_setting, book_id, book, set_book } = useCardData()
   const [setting_page_state, set_setting_page_state] = useState<'show' | 'hide'>('hide')
@@ -24,13 +29,6 @@ export const BookSettingPage = forwardRef(({}: props, ref) => {
       set_setting_page_state('show')
     }
   }))
-
-  const model_dict = {
-    en: ['en-US-AvaNeural', 'en-US-AndrewNeural'],
-    ko: ['ko-KR-InJoonNeural', 'ko-KR-SunHiNeural'],
-    hk: ['zh-HK-HiuGaaiNeural', 'zh-HK-WanLungNeural'],
-    jp: ['ja-JP-KeitaNeural', 'ja-JP-NanamiNeural']
-  }
 
   // 这个不会引起循环更新。
   useEffect(() => {

@@ -1,0 +1,62 @@
+// 包裹器
+@use '../styles.module.scss'as R;
+
+.record-main-wrapper {
+  display: flex;
+  padding: 50px;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+
+
+  @mixin tool-bar() {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    display: flex;
+    font-size: 20px;
+  }
+
+  // 问答卡片
+  &>.q {
+    &>.edite-feild {
+      font-size: var(--recite-card-font-size);
+    }
+
+    &>.tool-bar {
+      @include tool-bar();
+    }
+
+    @include R.card();
+  }
+
+  &>.a {
+    &>.edite-feild {
+      font-size: var(--recite-card-font-size);
+    }
+
+    &>.tool-bar {
+      @include tool-bar();
+    }
+
+    @include R.card();
+  }
+}
+
+.record-drawer-wrapper {
+  @include R.drawer-wrapper();
+
+  &>.record-cards-list-add {
+    padding: 0;
+    width: 70px;
+    font-size: 30px;
+    color: #aaa;
+    border: 2px dashed #aaa;
+
+    background-color: #ffffff5a;
+
+  }
+}

@@ -289,37 +289,7 @@ $forget-red:rgb(224, 50, 19);
   position: relative;
 }
 
-// 包裹器
-.record-main-wrapper {
-  display: flex;
-  padding: 50px;
-  height: 100%;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  overflow: hidden;
 
-
-
-
-  // 问答卡片
-  &>.q {
-    &>.edite-feild {
-      font-size: var(--recite-card-font-size);
-    }
-
-    @include card();
-  }
-
-  &>.a {
-    &>.edite-feild {
-      font-size: var(--recite-card-font-size);
-    }
-
-    @include card();
-  }
-}
 
 
 
@@ -369,20 +339,6 @@ $card-list-item-active-border:2px; // card-list-item 的 激活边框。
   scale: 1.1;
 }
 
-.record-drawer-wrapper {
-  @include drawer-wrapper();
-
-  &>.record-cards-list-add {
-    padding: 0;
-    width: 70px;
-    font-size: 30px;
-    color: #aaa;
-    border: 2px dashed #aaa;
-
-    background-color: #ffffff5a;
-
-  }
-}
 
 .recite-drawer-wrapper {
   @include drawer-wrapper();

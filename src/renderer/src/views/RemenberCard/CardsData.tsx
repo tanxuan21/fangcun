@@ -48,6 +48,8 @@ export const CardsDataProvider = ({
       const cards_list = await get_cards_by_book_id(book_id)
       set_cards(cards_list.data)
 
+      console.log(cards_list)
+
       // 获取书的配置
       const book = (await get_book_by_book_id(book_id)).data
 

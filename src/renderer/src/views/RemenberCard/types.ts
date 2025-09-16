@@ -138,8 +138,8 @@ export type CardDataType = {
   A: string
   id: string
   book_id: number
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
   audio: Blob | null
 }
 export type CardDataExtendType = CardDataType & {
