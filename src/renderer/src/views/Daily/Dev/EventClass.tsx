@@ -119,7 +119,9 @@ export function EventClassPage() {
               state: 2,
               instant_count: 0,
               type: 'record',
-              id: -1
+              id: -1,
+              view_in_timeline: true,
+              reminder_minutes_before: 0
             }
             const resp = await EventClassAPI.add(new_e)
             new_e.id = resp.id

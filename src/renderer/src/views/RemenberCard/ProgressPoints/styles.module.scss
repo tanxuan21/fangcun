@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .point {
   $point-size: 7px;
   width: $point-size;
@@ -7,7 +9,7 @@
   border-radius: 100px;
 
   &.finish {
-    background-color: fade-out($color: $point-color, $amount: .5);
+    background-color: color.adjust($color: $point-color, $alpha: -.5);
   }
 }
 
