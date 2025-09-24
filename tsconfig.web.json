@@ -8,9 +8,12 @@
         "src/renderer/**/*.svg"
     ],
     "compilerOptions": {
+        "moduleResolution": "bundler",
         "composite": true,
         "jsx": "react-jsx",
         "baseUrl": ".",
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
         "paths": {
             "@renderer/*": [
                 "src/renderer/src/*"

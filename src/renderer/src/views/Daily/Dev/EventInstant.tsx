@@ -280,7 +280,9 @@ export function EventInstantPage() {
               end_time: now.add(1, 'hour').format('YYYY-MM-DD HH:mm:ss'),
               urgent_level: 0,
               important_level: 0,
-              type: 'record'
+              type: 'record',
+              view_in_timeline: true,
+              reminder_minutes_before: 0
             }
             const result = await EventInstantAPI.add(new_instant)
             new_instant.id = result.data.id
