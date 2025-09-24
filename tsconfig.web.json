@@ -8,6 +8,7 @@
         "src/renderer/**/*.svg"
     ],
     "compilerOptions": {
+        "moduleResolution": "bundler",
         "composite": true,
         "jsx": "react-jsx",
         "baseUrl": ".",
