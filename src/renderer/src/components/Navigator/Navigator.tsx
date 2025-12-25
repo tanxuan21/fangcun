@@ -28,6 +28,7 @@ export const Navigator = ({ ShowSettingPage }: props) => {
         <Link className={styles['nav-link']} to={'/component/'}>
           <Icon IconName="#icon-kaifazujian" className={styles['nav-link-icon']}></Icon>
         </Link>
+
         <span
           className={styles['nav-link']}
           onClick={() => {

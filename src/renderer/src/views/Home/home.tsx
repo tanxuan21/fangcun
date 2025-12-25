@@ -2,57 +2,26 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import styles from './styles.module.scss'
 import { Button } from 'antd'
-export function Home() {
-  const nav = useNavigate()
 
-  const boxRef = useRef<HTMLDivElement>(null)
-  const [box_state, set_box_state] = useState<'ready' | 'show' | 'leave'>('ready')
-  //   const []
-  useEffect(() => {
-    // nav('app/remember-card')
-    const handleTransitionEnd = (event: TransitionEvent) => {
-      if (event.propertyName === 'translate') {
-        console.log(box_state, 'translate end')
-      }
-    }
-    window.addEventListener('transitionend', handleTransitionEnd)
-    return () => {
-      window.removeEventListener('transitionend', handleTransitionEnd)
-    }
-  }, [box_state])
+function FunctionItem({ function_name }: { function_name: string }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '20px'
-      }}
-    >
-      <Link to={'/app/remember-card/'}>Remember Car</Link>
-      <Link to={'/app/board/'}>board</Link>
-      <Link to={'/app/table/'}>table</Link>
-      <svg
-        style={{
-          fontSize: '25px',
-          width: '1em',
-          height: '1em',
-          display: 'inline-block',
-          color: '#aaa'
-        }}
-        className="icon"
-        aria-hidden="true"
-      >
-        <use style={{ width: '100%', height: '100%' }} xlinkHref="#icon-sousuo"></use>
-      </svg>
+    <div className={styles['function-card']}>
+      <h3>{function_name}</h3>
+    </div>
+  )
+}
 
-      <div className={styles['test-container']}>
-        <Button
-          onClick={() => {
-            window.api.restartApp()
-          }}
-        >
-          重启软件
-        </Button>
+export function Home() {
+  return (
+    <div className={styles['home-container']}>
+      <header className={styles['home-container-header']}></header>
+      <div className={styles['home-container-wrapper']}>
+        <aside className={styles['home-container-aside']}></aside>
+        <main className={styles['home-container-main']}>
+          <FunctionItem function_name={'音视频切分'}></FunctionItem>
+        </main>
       </div>
+      <footer className={styles['home-container-footer']}></footer>
     </div>
   )
 }

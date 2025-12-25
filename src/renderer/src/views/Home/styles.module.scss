@@ -1,27 +1,88 @@
-.test-container {
-  width: 100%;
-  height: 100%;
+/* 假设样式文件名为 Home.module.css */
+
+/* 最外层容器 */
+.home-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  /* 确保容器至少占满整个视口高度 */
+  width: 100%;
 
-  &>.box {
-    width: 200px;
-    height: 200px;
-    background: #50b7f7;
-    border-radius: 10px;
-    transition: 1s;
 
-    &.ready {
-      translate: -500px;
+  /* header样式 */
+  .home-container-header {
+    background-color: #333;
+    color: white;
+    padding: 1rem;
+    height: 60px;
+    /* 固定高度 */
+    flex-shrink: 0;
+    /* 防止header被压缩 */
+  }
+
+  /* 中间内容区域容器 */
+  .home-container-wrapper {
+    display: flex;
+    flex: 1;
+    /* 占据剩余所有空间 */
+    min-height: 0;
+    /* 防止内容溢出 */
+  }
+
+  /* aside侧边栏样式 */
+  .home-container-aside {
+    background-color: #f4f4f4;
+    width: 250px;
+    /* 固定宽度 */
+    padding: 1rem;
+    flex-shrink: 0;
+    /* 防止侧边栏被压缩 */
+    overflow-y: auto;
+    /* 如果内容过多，添加滚动条 */
+  }
+
+  /* main主内容区样式 */
+  .home-container-main {
+    flex: 1;
+    /* 占据剩余空间 */
+    padding: 2rem;
+    background-color: white;
+    overflow-y: auto;
+    /* 如果内容过多，添加滚动条 */
+    min-width: 0;
+    /* 防止弹性项目溢出 */
+
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    justify-items: center;
+
+    .function-card {
+      width: 200px;
+      height: 130px;
+      background: #fafafa;
+      color: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      box-shadow: 0 4px 10px 0 #00000025;
+      transition: scale .2s;
+
+      &:hover {
+        scale: 1.05;
+      }
     }
+  }
 
-    &.show {
-      translate: 0;
-    }
-
-    &.leave {
-      translate: 500px;
-    }
+  /* footer样式 */
+  .home-container-footer {
+    background-color: #333;
+    color: white;
+    padding: 1rem;
+    height: 50px;
+    /* 固定高度 */
+    flex-shrink: 0;
+    /* 防止footer被压缩 */
   }
 }
