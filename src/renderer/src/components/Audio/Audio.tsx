@@ -58,8 +58,8 @@ export const Audio = forwardRef(
     }))
     // content/voice_model变化，必须重新获取。
     useEffect(() => {
-      if (type === 'recite') return // 背诵模式，不获取任何的audio
-      console.log(content, voice_model, blob)
+      //   console.log(content, voice_model, blob)
+      //   if (type === 'recite') return // 背诵模式，不获取任何的audio
 
       if (!content) {
         // 必须有文字，或者有模型才获取音频

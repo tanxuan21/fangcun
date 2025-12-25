@@ -1,5 +1,5 @@
 @use './config.scss';
-
+@use 'sass:color';
 
 $remember-green:rgb(11, 173, 111);
 $vague-orange:rgb(240, 223, 36);
@@ -236,7 +236,7 @@ $forget-red:rgb(224, 50, 19);
       $handle-color: #da4949;
       width: $handle-height-default;
       cursor: pointer;
-      background: fade-out($handle-color, .7);
+      background: color.adjust($color : $handle-color, $alpha: -.7);
       position: absolute;
       left: 50%;
 
@@ -335,7 +335,7 @@ $card-list-item-active-border:2px; // card-list-item 的 激活边框。
 
 .card-list-item-active {
   outline: $card-list-item-active-border solid #ee903e;
-  box-shadow: 0 0 6px 0 fade-out(#ee903e, .7);
+  box-shadow: 0 0 6px 0 color.adjust(#ee903e, $alpha: .7);
   scale: 1.1;
 }
 
@@ -391,17 +391,17 @@ $card-list-item-active-border:2px; // card-list-item 的 激活边框。
       $review-count-bg-fade: .7;
 
       &.remember-count-label {
-        background: fade-out($remember-green, $review-count-bg-fade);
+        background: color.adjust($remember-green, $alpha: $review-count-bg-fade);
 
       }
 
       &.vague-count-label {
-        background: fade-out($vague-orange, $review-count-bg-fade);
+        background: color.adjust($vague-orange, $alpha: $review-count-bg-fade);
 
       }
 
       &.forget-count-label {
-        background: fade-out($forget-red, $review-count-bg-fade);
+        background: color.adjust($forget-red, $alpha: $review-count-bg-fade);
 
       }
     }

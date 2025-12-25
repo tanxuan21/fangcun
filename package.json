@@ -84,13 +84,13 @@
     ]
   },
   "build": {
-    "appId": "",
+    "appId": "com.electron.fangcun",
     "productName": "",
     "publish": [
       {
         "provider": "github",
         "owner": "tanxuan21",
-        "repo": ""
+        "repo": "fangcun"
       }
     ],
     "win": {
@@ -99,5 +99,9 @@
     "mac": {
       "target": "dmg"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tanxuan21/fangcun.git"
   }
 }
