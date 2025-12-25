@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styles from './styles.module.scss'
-import { Button } from 'antd'
 
-function FunctionItem({ function_name }: { function_name: string }) {
+function FunctionItem({ function_name, route_url }: { function_name: string; route_url: string }) {
+  const nav = useNavigate()
   return (
-    <div className={styles['function-card']}>
+    <div
+      className={styles['function-card']}
+      onClick={() => {
+        if (route_url) nav(route_url)
+        else console.warn('required route url')
+      }}
+    >
       <h3>{function_name}</h3>
     </div>
   )
@@ -18,7 +23,10 @@ export function Home() {
       <div className={styles['home-container-wrapper']}>
         <aside className={styles['home-container-aside']}></aside>
         <main className={styles['home-container-main']}>
-          <FunctionItem function_name={'音视频切分'}></FunctionItem>
+          <FunctionItem
+            function_name={'音视频切分'}
+            route_url="/function/video-splitter"
+          ></FunctionItem>
         </main>
       </div>
       <footer className={styles['home-container-footer']}></footer>

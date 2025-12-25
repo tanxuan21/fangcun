@@ -9,7 +9,7 @@ import { ReviewSummary } from '@renderer/views/RemenberCard/ReviewSummary/Review
 import { DailyDev } from '@renderer/views/Daily/Dev/DailyDev'
 import { Daily } from '@renderer/views/Daily/Daily'
 import { ComponentRoute } from './ComponentRoute'
-
+import { FunctionRoute } from './FunctionRoute'
 export const route: RouteObject[] = [
   ...[
     {
@@ -46,7 +46,8 @@ export const route: RouteObject[] = [
       element: <Daily />
     }
   ],
-  ...ComponentRoute
+  ...ComponentRoute,
+  ...FunctionRoute
 ]
 
 export const Route = () => {
