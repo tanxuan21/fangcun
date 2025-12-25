@@ -114,7 +114,7 @@ export const generalCSP = () => {
     script-src 'self' ${address_str} https://at.alicdn.com/ 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: ${address_str};
-    media-src 'self' data: blob: https://translate.google.com;
+    media-src 'self' data: blob: https://translate.google.com http://localhost:3001;
   `
   //   console.log(csp)
   return csp

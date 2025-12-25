@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import styles from './styles.module.scss'
+import { Template } from '@renderer/components/Layout/Template'
 
 function FunctionItem({ function_name, route_url }: { function_name: string; route_url: string }) {
   const nav = useNavigate()
@@ -18,18 +19,19 @@ function FunctionItem({ function_name, route_url }: { function_name: string; rou
 
 export function Home() {
   return (
-    <div className={styles['home-container']}>
-      <header className={styles['home-container-header']}></header>
-      <div className={styles['home-container-wrapper']}>
-        <aside className={styles['home-container-aside']}></aside>
+    <Template
+      header={<header className={styles['home-container-header']}></header>}
+      asider={<aside className={styles['home-container-aside']}></aside>}
+      main={
         <main className={styles['home-container-main']}>
           <FunctionItem
-            function_name={'音视频切分'}
+            function_name={'跟读素材切分'}
             route_url="/function/video-splitter"
           ></FunctionItem>
+          <FunctionItem function_name={'背语群'} route_url=""></FunctionItem>
         </main>
-      </div>
-      <footer className={styles['home-container-footer']}></footer>
-    </div>
+      }
+      footer={<footer className={styles['home-container-footer']}></footer>}
+    />
   )
 }

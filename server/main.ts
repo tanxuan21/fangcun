@@ -5,6 +5,7 @@ import { exit } from 'node:process'
 import booksRouter from './recite/books-routes'
 import dailyRouter from './daily/daily-route'
 import cardsRouter from './recite/cards-routes'
+import videoRouter from './video/video-router'
 // import AssetsRouter from './assets/assets-router'
 const app = express()
 
@@ -21,6 +22,7 @@ app.use('/api/recite/books', booksRouter)
 app.use('/api/recite/cards', cardsRouter)
 app.use('/api/daily', dailyRouter)
 // app.use('/api/assets')
+app.use('/api', videoRouter)
 
 app.get('/api', (req: Request, res: Response) => {
   console.log(req)
