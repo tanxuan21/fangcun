@@ -4,6 +4,14 @@ import styles from './splitter-controller.module.scss'
 interface props {
   video: React.RefObject<HTMLVideoElement>
 }
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds)) return '00:00'
+
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
 
 export const SplitterController = ({ video }: props) => {
   const ctnRef = useRef<HTMLDivElement>(null)
@@ -36,6 +44,11 @@ export const SplitterController = ({ video }: props) => {
     const pointer_header = document.createElement('div')
     pointer_header.className = styles['pointer_header']
     pointer.appendChild(pointer_header)
+
+    const pointer_timer = document.createElement('span')
+    pointer_timer.className = styles['pointer-timer']
+    pointer_header.appendChild(pointer_timer)
+
     ctnRef.current?.appendChild(pointer)
 
     // =====================================================
@@ -44,6 +57,8 @@ export const SplitterController = ({ video }: props) => {
       const { left, right } = ctnRef.current?.getBoundingClientRect()
       let x = (right - left) * (video.current.currentTime / video.current.duration)
       pointer.style.left = `${x}px`
+      let t = video.current.currentTime
+      pointer_timer.innerHTML = formatTime(t)
     }
     if (video.current) {
       video.current.addEventListener('timeupdate', VideoTimeUpdateHandle)

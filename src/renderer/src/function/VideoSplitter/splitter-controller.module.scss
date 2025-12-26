@@ -3,6 +3,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  color: #444;
 
   .tool-bar-header {
     height: 40px;
@@ -21,7 +22,7 @@
       height: 100%;
       width: 2px;
       transform: translateX(-50%);
-      background: rgb(255, 116, 91);
+      background: rgb(255, 38, 0);
       position: absolute;
 
       &:hover {
@@ -36,8 +37,16 @@
         left: 0;
         transform: translate(-50%, -50%);
         left: 50%;
-        background: rgb(255, 116, 91);
+        background: rgb(255, 38, 0);
         border-radius: 2px;
+
+
+        .pointer-timer {
+          position: absolute;
+          left: -100%;
+          top: -200%;
+          font-size: 13px;
+        }
       }
     }
   }
