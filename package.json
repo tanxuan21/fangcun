@@ -12,7 +12,7 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
-    "dev": "electron-vite dev",
+    "dev": "ts-node precompile/index.ts && electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
@@ -21,6 +21,7 @@
     "build:linux": "electron-vite build && electron-builder --linux",
     "test": "ts-node temp/index.ts",
     "server-dev": "ts-node server/main.ts",
+    "pre-com": "ts-node precompile/index.ts",
     "icon": "ts-node utils/update-iconfont.ts"
   },
   "dependencies": {
@@ -45,6 +46,7 @@
     "papaparse": "^5.5.3",
     "react-router-dom": "^7.7.0",
     "sqlite3": "^5.1.7",
+    "ts-morph": "^27.0.2",
     "typescript-cubic-spline": "^1.0.1",
     "zod": "^4.1.5"
   },

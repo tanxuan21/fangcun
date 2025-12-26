@@ -2,6 +2,8 @@ import { AutoUpdaterAPI } from './API/AutoUpdater'
 import { dialog_api } from './API/dialog'
 import { file_api } from './API/Files'
 import { SettingAPI } from './API/setting'
+import { VideoSplitterAPI } from './API/VideoSplitter'
+import { general_api_interface } from './general'
 export type API = {
   saveBase64ToFile: (base64Data: string, filename: string) => Promise<void>
   loadPic: (filename: string) => Promise<string>
@@ -12,4 +14,6 @@ export type API = {
 } & dialog_api &
   file_api &
   SettingAPI &
-  AutoUpdaterAPI
+  AutoUpdaterAPI &
+  VideoSplitterAPI &
+  general_api_interface

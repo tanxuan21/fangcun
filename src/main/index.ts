@@ -13,6 +13,8 @@ import { IPC_File } from './File/File'
 import { generalCSP, IPC_Setting } from './Setting/Setting'
 import { GetMainWindow, SetMainWindow } from './MainWindow'
 import { ListenUpdateEvent } from './AutoUpdater/AutoUpdater'
+import { IPC_Video } from './Video/Video'
+import { BIND_IPCMAIN_HANDLE } from './general'
 
 function createWindow(): void {
   // Create the browser window.
@@ -102,7 +104,9 @@ app.whenReady().then(async () => {
   if (mainWindow) {
     IPCMAIN_HANDLE(IPC_File(mainWindow))
     IPCMAIN_HANDLE(IPC_Dialog(mainWindow))
+    IPCMAIN_HANDLE(IPC_Video(mainWindow))
     ListenUpdateEvent(mainWindow)
+    BIND_IPCMAIN_HANDLE(mainWindow)
   } else console.error('null mainWindow', mainWindow)
   IPCMAIN_HANDLE(await IPC_Setting()) // 软件设置 API
 

@@ -29,6 +29,13 @@ export function Home() {
             route_url="/function/video-splitter"
           ></FunctionItem>
           <FunctionItem function_name={'背语群'} route_url=""></FunctionItem>
+          <button
+            onClick={() => {
+              window.api.UploadVideo2(1, 's')
+            }}
+          >
+            测试预编译
+          </button>
         </main>
       }
       footer={<footer className={styles['home-container-footer']}></footer>}

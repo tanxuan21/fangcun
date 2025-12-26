@@ -2,13 +2,20 @@ import { Template } from '@renderer/components/Layout/Template'
 import styles from './layout-styles.module.scss'
 import { SplitterController } from './SplitterController'
 import { useRef } from 'react'
+import { electronAPI } from '@electron-toolkit/preload'
 export function VideoSplitter() {
   const VideoRef = useRef<HTMLVideoElement>(null)
   return (
     <Template
       header={
         <header className={styles['video-splitter-header']}>
-          <span>upload</span>
+          <span
+            onClick={() => {
+              window.api.UpLoadVideo()
+            }}
+          >
+            upload
+          </span>
         </header>
       }
       asider={<aside className={styles['video-splitter-asider']}></aside>}
