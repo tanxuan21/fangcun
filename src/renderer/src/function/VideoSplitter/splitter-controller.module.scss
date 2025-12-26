@@ -1,0 +1,44 @@
+.splitter-controller-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .tool-bar-header {
+    height: 40px;
+    flex-shrink: 0;
+
+  }
+
+  .time-line-editor {
+    width: 100%;
+    height: 100%;
+    background: #a1a1a1;
+    flex: 1;
+    position: relative;
+
+    .pointer {
+      height: 100%;
+      width: 2px;
+      transform: translateX(-50%);
+      background: rgb(255, 116, 91);
+      position: absolute;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      .pointer_header {
+        width: 10px;
+        height: 10px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+        left: 50%;
+        background: rgb(255, 116, 91);
+        border-radius: 2px;
+      }
+    }
+  }
+}
