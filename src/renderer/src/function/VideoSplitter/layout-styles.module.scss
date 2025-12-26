@@ -1,12 +1,20 @@
 .video-splitter-asider {
   width: 200px;
   flex-shrink: 0;
+  background: #0000000c;
 }
 
 .video-splitter-header {
   height: 70px;
   flex-shrink: 0;
-  background-color: #333;
+  background-color: #575757;
+  color: #fff;
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+  align-items: center;
+  padding: 1em;
+
 }
 
 .video-splitter-footer {

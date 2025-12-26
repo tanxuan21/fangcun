@@ -6,7 +6,11 @@ export function VideoSplitter() {
   const VideoRef = useRef<HTMLVideoElement>(null)
   return (
     <Template
-      header={<header className={styles['video-splitter-header']}></header>}
+      header={
+        <header className={styles['video-splitter-header']}>
+          <span>upload</span>
+        </header>
+      }
       asider={<aside className={styles['video-splitter-asider']}></aside>}
       main={
         <main className={styles['video-splitter-main']}>

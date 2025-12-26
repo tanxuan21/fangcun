@@ -85,6 +85,7 @@ export const SplitterController = ({ video }: props) => {
         >
           pluse
         </button>
+        <button onClick={() => {}}>break</button>
       </header>
       <div ref={ctnRef} className={styles['time-line-editor']}></div>
     </div>
