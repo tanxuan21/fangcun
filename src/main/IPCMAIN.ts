@@ -1,7 +1,11 @@
-import { ipcMain, IpcMainInvokeEvent } from "electron";
+import { ipcMain, IpcMainInvokeEvent } from 'electron'
 
-export function IPCMAIN_HANDLE(mapping: { [key: string]: (event: IpcMainInvokeEvent, ...args: any[]) => any }) {
+export function IPCMAIN_HANDLE(mapping: {
+  [key: string]: (event: IpcMainInvokeEvent, ...args: any[]) => any
+}) {
   for (const key in mapping) {
-    ipcMain.handle(key,mapping[key])
+    ipcMain.handle(key, mapping[key])
+
+    console.log(key)
   }
 }

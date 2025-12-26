@@ -7,3 +7,4 @@ out
 *.db
 *general*
 out.json
+build/*

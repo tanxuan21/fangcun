@@ -11,7 +11,7 @@ export function VideoSplitter() {
         <header className={styles['video-splitter-header']}>
           <span
             onClick={() => {
-              window.api.UpLoadVideo()
+              window.api.UploadVideo()
             }}
           >
             upload

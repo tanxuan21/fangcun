@@ -7,13 +7,11 @@ import fs from 'fs/promises'
 import { createTerminal } from './terminal/terminal'
 import { textToSpeechGoogle } from './fetch_audio'
 import { IPCMAIN_HANDLE } from './IPCMAIN'
-import { dialog_api } from '../../type/API/dialog'
 import { IPC_Dialog } from './Dialog/Dialog'
 import { IPC_File } from './File/File'
 import { generalCSP, IPC_Setting } from './Setting/Setting'
 import { GetMainWindow, SetMainWindow } from './MainWindow'
 import { ListenUpdateEvent } from './AutoUpdater/AutoUpdater'
-import { IPC_Video } from './Video/Video'
 import { BIND_IPCMAIN_HANDLE } from './general'
 
 function createWindow(): void {
@@ -104,12 +102,10 @@ app.whenReady().then(async () => {
   if (mainWindow) {
     IPCMAIN_HANDLE(IPC_File(mainWindow))
     IPCMAIN_HANDLE(IPC_Dialog(mainWindow))
-    IPCMAIN_HANDLE(IPC_Video(mainWindow))
     ListenUpdateEvent(mainWindow)
     BIND_IPCMAIN_HANDLE(mainWindow)
   } else console.error('null mainWindow', mainWindow)
   IPCMAIN_HANDLE(await IPC_Setting()) // 软件设置 API
-
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

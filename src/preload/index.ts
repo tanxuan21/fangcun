@@ -3,7 +3,6 @@ import { electronAPI } from '@electron-toolkit/preload'
 import { API } from '../../type/API'
 import { SettingExpose } from './Setting/Setting'
 import { AutoUpdaterExpose } from './AutoUpdater/AutoUpdater'
-import { VideoSplitterExpose } from './VideoSplitter/VideoSplitter'
 import { general_preload_expose } from './general'
 
 // Custom APIs for renderer
@@ -39,7 +38,6 @@ const api: API = {
   },
   ...SettingExpose(),
   ...AutoUpdaterExpose(),
-  ...VideoSplitterExpose(),
   ...general_preload_expose()
 }
 
