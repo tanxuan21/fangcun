@@ -8,3 +8,4 @@ out
 *general*
 out.json
 build/*
+*.csv

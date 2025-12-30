@@ -29,6 +29,7 @@ export function Home() {
             route_url="/function/video-splitter"
           ></FunctionItem>
           <FunctionItem function_name={'背语群'} route_url=""></FunctionItem>
+          <FunctionItem function_name={'复习安排'} route_url="/function/review"></FunctionItem>
           <button
             onClick={() => {
               window.api.UploadVideo2(1, 's')

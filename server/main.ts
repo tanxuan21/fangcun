@@ -7,6 +7,7 @@ import dailyRouter from './daily/daily-route'
 import cardsRouter from './recite/cards-routes'
 import videoRouter from './video/video-router'
 // import AssetsRouter from './assets/assets-router'
+import reviewRouter from './review/review-router'
 const app = express()
 
 const PORT = 3001
@@ -23,6 +24,7 @@ app.use('/api/recite/cards', cardsRouter)
 app.use('/api/daily', dailyRouter)
 // app.use('/api/assets')
 app.use('/api', videoRouter)
+app.use('/api', reviewRouter)
 
 app.get('/api', (req: Request, res: Response) => {
   console.log(req)

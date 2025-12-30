@@ -1,0 +1,20 @@
+.review-header {
+  display: flex;
+  height: 50px;
+  background: #797979;
+
+  .review-uploader {
+    padding: 10px;
+    border: 1px solid #000000;
+  }
+}
+
+.review-asider {
+  width: 200px;
+  background: #e4e4e471;
+}
+
+.review-footer {
+  height: 50px;
+  background: #00000033;
+}

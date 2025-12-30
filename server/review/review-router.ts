@@ -19,6 +19,8 @@ router.post('/review-items', (req, res) => {
     const result = ReviewDataBaseInstance.add_review_item(req.body.type, req.body.content)
     makeSuccessRep(res, result)
   } catch (e) {
+    console.log(e)
+
     res.status(500).send(e.message)
   }
 })
