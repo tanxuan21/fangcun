@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { ReciteBooksDatabase } from '../recite/books'
 import { ReciteCardsDatabase } from '../recite/card'
 import { DailyDatabase } from '../daily/daily'
+import { ReviewDatabase } from '../review/review'
 
 const db = Database('database.db')
 // 因为要先将关联的父表创建出来，再创建子表。
@@ -9,4 +10,10 @@ const db = Database('database.db')
 const ReciteDataBaseInstance = new ReciteBooksDatabase(db)
 const ReciteCardsDataBaseInstance = new ReciteCardsDatabase(db)
 const DailyDataBaseInstance = new DailyDatabase(db)
-export { ReciteDataBaseInstance, ReciteCardsDataBaseInstance, DailyDataBaseInstance }
+const ReviewDataBaseInstance = new ReviewDatabase(db)
+export {
+  ReciteDataBaseInstance,
+  ReciteCardsDataBaseInstance,
+  DailyDataBaseInstance,
+  ReviewDataBaseInstance
+}
