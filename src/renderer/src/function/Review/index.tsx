@@ -3,11 +3,14 @@ import layout_styles from './layout-styles.module.scss'
 import styles from './styles.module.scss'
 import Papa from 'papaparse'
 import axios from 'axios'
+import TextArea from 'antd/es/input/TextArea'
 import { useEffect, useState } from 'react'
+import { Button } from 'antd'
 
 enum PageTags {
   Review = 0,
-  Summary
+  Summary,
+  Setting
 }
 export const Review = () => {
   const [files, setFiles] = useState<File[]>([])
@@ -72,13 +75,13 @@ export const Review = () => {
             id="fileInput"
             accept=".txt,.csv,.json,.html,.js,.css,.xml"
           ></input>
-          <button
+          {/* <button
             onClick={() => {
               if (files && files.length >= 0) ReadCSV(files[0])
             }}
           >
             刷新文件
-          </button>
+          </button> */}
           <div className={layout_styles['review-tags-wapper']}>
             <span onClick={() => setCurrentPage(PageTags.Review)}>review</span>
             <span onClick={() => setCurrentPage(PageTags.Summary)}>summary</span>
@@ -121,9 +124,7 @@ const SummaryPage = () => {
   }, [])
 
   return (
-    <div
-      className={`${layout_styles['table-container']} ${layout_styles['review-main-container']}`}
-    >
+    <div className={`${layout_styles['table-container']} ${layout_styles['fill-container']}`}>
       <table>
         <thead>
           <tr>
@@ -151,7 +152,37 @@ const SummaryPage = () => {
 }
 
 const ReviewPage = () => {
-  return <div className={layout_styles['review-main-container']}>Review</div>
+  useEffect(() => {
+    ;(async () => {
+      // 获取当天复习的数据
+    })()
+  }, [])
+  return (
+    <div className={`${layout_styles['review-main-container']} ${layout_styles['fill-container']}`}>
+      <div className={layout_styles['review-content-container']}>
+        <p className={layout_styles['review-q']}>
+          什么是可见（透明）寄存器？CPU 基本寄存器里，哪些可见，哪些不可见？为什么？
+        </p>
+        <p className={layout_styles['review-a']}>王道书 王道书 5.1.2 p207</p>
+      </div>
+      <div className={layout_styles['review-operation-container']}>
+        <div className={layout_styles['review-operation-button-rate-container']}>
+          <Button type="primary">I can!</Button>
+          <Button type="dashed">trying...</Button>
+          <Button type="text" color="pink" variant="filled">
+            I can't
+          </Button>
+        </div>
+        <p className={layout_styles['textarea-reminder']}>
+          something remark up about this review... ...
+        </p>
+        <TextArea rows={4} placeholder="I remenber... but..." />
+      </div>
+      <footer className={layout_styles['review-footer']}>
+        <Button>submit</Button>
+      </footer>
+    </div>
+  )
 }
 const MainPages = ({ currentPage }: { currentPage: PageTags }) => {
   switch (currentPage) {
@@ -162,5 +193,8 @@ const MainPages = ({ currentPage }: { currentPage: PageTags }) => {
       return <ReviewPage></ReviewPage>
       break
       defaule: return <div>Default</div>
+    case PageTags.Setting:
+      return <div>Setting</div>
+      break
   }
 }
