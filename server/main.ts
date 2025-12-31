@@ -8,6 +8,7 @@ import cardsRouter from './recite/cards-routes'
 import videoRouter from './video/video-router'
 // import AssetsRouter from './assets/assets-router'
 import reviewRouter from './review/review-router'
+import { extendResponse } from './utils/asyncHandler'
 const app = express()
 
 const PORT = 3001
@@ -18,7 +19,7 @@ app.use(
   })
 )
 app.use(express.json())
-
+app.use(extendResponse)
 app.use('/api/recite/books', booksRouter)
 app.use('/api/recite/cards', cardsRouter)
 app.use('/api/daily', dailyRouter)

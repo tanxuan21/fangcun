@@ -5,7 +5,7 @@ import {
   EventInstantQuery,
   EventInstantQueryAccurate,
   EventInstantQueryFuzzy
-} from '../../type/daily'
+} from '../../types/daily'
 const BOOL_FIELDS = new Set(['view_in_timeline'])
 
 const processingBoolean = (keys, updates) => {

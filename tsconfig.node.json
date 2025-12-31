@@ -11,6 +11,10 @@
         "noUnusedParameters": false,
         "types": [
             "electron-vite/node"
-        ]
+        ],
+        "typeRoots": [
+            "./node_modules/@types",
+            "./types" // 将自定义的 type 根目录加入到 tsconfig.json 的 typeRoots 中
+        ],
     }
 }

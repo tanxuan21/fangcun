@@ -1,7 +1,7 @@
 import { Router, Request } from 'express'
 import { DailyDataBaseInstance } from '../database/database'
 import { makeSuccessRep } from '../utils'
-import { EventInstantQuery } from '../../type/daily'
+import { EventInstantQuery } from '../../types/daily'
 const router = Router()
 
 // 获取所有事件类

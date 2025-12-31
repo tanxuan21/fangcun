@@ -1,5 +1,19 @@
 import Database from 'better-sqlite3'
 
+interface ReviewItem {
+  id: number
+  type: number
+  content: string
+  created_at: string
+}
+interface Review {
+  id: number
+  rate: number
+  remark: string
+  item_id: number
+  created_at: string
+}
+
 class ReviewDatabase {
   private readonly db: Database.Database
   constructor(db: Database.Database) {
@@ -61,12 +75,26 @@ class ReviewDatabase {
     stmt.run(updates.rate, updates.remark, id)
   }
   add_review_item(type: number, content: string) {
+    // 先检查数据库是否存在
+    const stmt_check = this.db.prepare(
+      `
+        SELECT * FROM review_items WHERE type = ? AND content = ?;
+        `
+    )
+    const result = stmt_check.get(type, content) as ReviewItem
+    if (result) {
+      return { success: false, id: result.id }
+    }
     const stmt = this.db.prepare(
       `
         INSERT INTO review_items (type, content) VALUES (?, ?);
         `
     )
-    stmt.run(type, content)
+    const insert = stmt.run(type, content)
+    return {
+      id: insert.lastInsertRowid,
+      success: true
+    }
   }
   get_all_review_items() {
     const stmt = this.db.prepare(
