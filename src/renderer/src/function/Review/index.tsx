@@ -3,7 +3,12 @@ import layout_styles from './layout-styles.module.scss'
 import styles from './styles.module.scss'
 import Papa from 'papaparse'
 import axios from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+enum PageTags {
+  Review = 0,
+  Summary
+}
 export const Review = () => {
   const [files, setFiles] = useState<File[]>([])
 
@@ -49,6 +54,7 @@ export const Review = () => {
     reader.readAsText(file)
   }
 
+  const [currentPage, setCurrentPage] = useState<PageTags>(PageTags.Summary)
   return (
     <Template
       header={
@@ -73,20 +79,88 @@ export const Review = () => {
           >
             刷新文件
           </button>
-          <button
-            onClick={() => {
-              axios.get('http://localhost:3001/api/review-items').then((res) => {
-                console.log(res.data)
-              })
-            }}
-          >
-            获取文件
-          </button>
+          <div className={layout_styles['review-tags-wapper']}>
+            <span onClick={() => setCurrentPage(PageTags.Review)}>review</span>
+            <span onClick={() => setCurrentPage(PageTags.Summary)}>summary</span>
+          </div>
         </header>
       }
-      main={<div>Review</div>}
+      main={<MainPages currentPage={currentPage}></MainPages>}
       asider={<aside className={layout_styles['review-asider']}></aside>}
       footer={<footer className={layout_styles['review-footer']}></footer>}
     />
   )
+}
+
+interface Iqa {
+  q: string
+  a: string
+}
+interface ReviewItem {
+  id: number
+  type: number
+  content: Iqa
+  created_at: string
+}
+
+const SummaryPage = () => {
+  const [summaryData, setSummaryData] = useState<ReviewItem[]>()
+  useEffect(() => {
+    ;(async () => {
+      axios.get('http://localhost:3001/api/review-items').then((res) => {
+        console.log('获取 summery 信息')
+        const data = res.data['data'].map((item) => {
+          return {
+            ...item,
+            content: JSON.parse(item.content)
+          }
+        })
+        setSummaryData(data)
+      })
+    })()
+  }, [])
+
+  return (
+    <div
+      className={`${layout_styles['table-container']} ${layout_styles['review-main-container']}`}
+    >
+      <table>
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>created_at</th>
+            <th>Oper</th>
+          </tr>
+        </thead>
+        <tbody>
+          {summaryData?.map((item) => (
+            <tr key={item.id}>
+              <td>{item.content.q}</td>
+              <td>{item.content.a}</td>
+              <td>{item.created_at}</td>
+              <td>
+                <button>del</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+const ReviewPage = () => {
+  return <div className={layout_styles['review-main-container']}>Review</div>
+}
+const MainPages = ({ currentPage }: { currentPage: PageTags }) => {
+  switch (currentPage) {
+    case PageTags.Summary:
+      return <SummaryPage></SummaryPage>
+      break
+    case PageTags.Review:
+      return <ReviewPage></ReviewPage>
+      break
+      defaule: return <div>Default</div>
+  }
 }
