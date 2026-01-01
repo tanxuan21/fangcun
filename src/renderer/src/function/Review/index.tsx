@@ -208,24 +208,79 @@ const SummaryPage = () => {
 }
 
 const ReviewPage = () => {
+  enum ReviewStages {
+    Disable = 0, // 不可用。比如出现网络错误等情况
+    PrepareReviewItem, // 程序准备复习数据
+    // 准备完毕，自动转移到复习界面
+    Review, // 面对问题复习
+    // 按按钮，选择自己是否掌握
+    Check, // 检查答案，是是否掌握
+    // 填写评论，必要时修改掌握按钮，提交此次复习
+    Submitting // 网络请求中
+  }
+  const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
+  const [currentReviewItem, setCurrentReviewItem] = useState<ReviewItem>()
   useEffect(() => {
     ;(async () => {
+      // TODO
       // 获取当天复习的数据
+      // 获取成功，转移到prepareReviewItem状态，否则 Disable
+      setCurrentStage(ReviewStages.PrepareReviewItem)
     })()
   }, [])
+
+  useEffect(() => {
+    if (currentStage === ReviewStages.PrepareReviewItem) {
+      // 生成队列取出item，状态转移到 Review
+      setCurrentStage(ReviewStages.Review)
+      // 获取失败，转移到Disable状态
+    }
+  }, [currentStage])
   return (
     <div className={`${layout_styles['review-main-container']} ${layout_styles['fill-container']}`}>
+      {/* 问题展示区 */}
       <div className={layout_styles['review-content-container']}>
         <p className={layout_styles['review-q']}>
           什么是可见（透明）寄存器？CPU 基本寄存器里，哪些可见，哪些不可见？为什么？
         </p>
-        <p className={layout_styles['review-a']}>王道书 王道书 5.1.2 p207</p>
+        {currentStage === ReviewStages.Check && (
+          <p className={layout_styles['review-a']}>王道书 王道书 5.1.2 p207</p>
+        )}
       </div>
+      {/* 操作区 */}
       <div className={layout_styles['review-operation-container']}>
         <div className={layout_styles['review-operation-button-rate-container']}>
-          <Button type="primary">I can!</Button>
-          <Button type="dashed">trying...</Button>
-          <Button type="text" color="pink" variant="filled">
+          {/* TODO 按钮组改为单选组 */}
+          <Button
+            onClick={() => {
+              if (currentStage === ReviewStages.Review) {
+                setCurrentStage(ReviewStages.Check)
+              }
+            }}
+            type="primary"
+          >
+            I can!
+          </Button>
+          <Button
+            onClick={() => {
+              if (currentStage === ReviewStages.Review) {
+                setCurrentStage(ReviewStages.Check)
+              }
+            }}
+            type="dashed"
+          >
+            trying...
+          </Button>
+          <Button
+            onClick={() => {
+              if (currentStage === ReviewStages.Review) {
+                setCurrentStage(ReviewStages.Check)
+              }
+            }}
+            type="text"
+            color="pink"
+            variant="filled"
+          >
             I can't
           </Button>
         </div>
@@ -235,7 +290,16 @@ const ReviewPage = () => {
         <TextArea rows={4} placeholder="I remenber... but..." />
       </div>
       <footer className={layout_styles['review-footer']}>
-        <Button>submit</Button>
+        <Button
+          onClick={() => {
+            if (currentStage === ReviewStages.Check) setCurrentStage(ReviewStages.Submitting)
+            // TODO 网络请求成功，状态转移到 PrepareReviewItem
+            setCurrentStage(ReviewStages.PrepareReviewItem)
+            // 否则，Disable
+          }}
+        >
+          submit
+        </Button>
       </footer>
     </div>
   )
