@@ -62,20 +62,31 @@ router.delete('/review-items', (req, res) => {
   }
 })
 
-router.get('/reviews', (req, res) => {
-  const item_id = req.query['item_id']
-  // 检查是否为字符串
-  if (!item_id || typeof item_id !== 'string') {
-    res.status(400).send('item_id is required and must be a string')
-    return
-  }
-  try {
-    const result = ReviewDataBaseInstance.get_all_reviews(parseInt(item_id))
-    makeSuccessRep(res, result)
-  } catch (e) {
-    res.status(500).send(e.message)
-  }
-})
+// router.get('/reviews', (req, res) => {
+//   const item_id = req.query['item_id']
+//   // 检查是否为字符串
+//   if (!item_id || typeof item_id !== 'string') {
+//     res.status(400).send('item_id is required and must be a string')
+//     return
+//   }
+//   try {
+//     const result = ReviewDataBaseInstance.get_all_reviews(parseInt(item_id))
+//     makeSuccessRep(res, result)
+//   } catch (e) {
+//     res.status(500).send(e.message)
+//   }
+// })
+
+router.get(
+  '/reviews',
+  GET(async (req, res) => {
+    const item_id = req.query['item_id']
+    if (!item_id || typeof item_id !== 'string') {
+      throw AppError.badRequest('item_id is required')
+    }
+    return ReviewDataBaseInstance.get_all_reviews(parseInt(item_id))
+  })
+)
 
 router.post('/reviews', (req, res) => {
   try {

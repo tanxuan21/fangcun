@@ -36,6 +36,8 @@ class ReviewDatabase {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type INTEGER NOT NULL,
             content TEXT NOT NULL, -- 用 json 灵活定义各种题型吧 ... ....
+            last_reviewed_at TEXT DEFAULT CURRENT_TIMESTAMP, -- 上次复习时间
+            next_review_at TEXT DEFAULT CURRENT_TIMESTAMP,   -- 安排的下次复习时间
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         );
         `
@@ -85,6 +87,7 @@ class ReviewDatabase {
     if (result) {
       return { success: false, id: result.id }
     }
+    // 添加
     const stmt = this.db.prepare(
       `
         INSERT INTO review_items (type, content) VALUES (?, ?);

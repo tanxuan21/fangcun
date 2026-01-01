@@ -6,6 +6,7 @@ import axios from 'axios'
 import TextArea from 'antd/es/input/TextArea'
 import { useEffect, useState } from 'react'
 import { Button } from 'antd'
+import { getRelativeTime } from '@renderer/utils/time'
 
 enum PageTags {
   Review = 0,
@@ -85,6 +86,7 @@ export const Review = () => {
           <div className={layout_styles['review-tags-wapper']}>
             <span onClick={() => setCurrentPage(PageTags.Review)}>review</span>
             <span onClick={() => setCurrentPage(PageTags.Summary)}>summary</span>
+            <span onClick={() => setCurrentPage(PageTags.Setting)}>setting</span>
           </div>
         </header>
       }
@@ -104,6 +106,8 @@ interface ReviewItem {
   type: number
   content: Iqa
   created_at: string
+  last_reviewed_at: string
+  next_review_at: string
 }
 
 const SummaryPage = () => {
@@ -131,6 +135,8 @@ const SummaryPage = () => {
             <th>Question</th>
             <th>Answer</th>
             <th>created_at</th>
+            <th>last_reviewed</th>
+            <th>next_review</th>
             <th>Oper</th>
           </tr>
         </thead>
@@ -140,6 +146,8 @@ const SummaryPage = () => {
               <td>{item.content.q}</td>
               <td>{item.content.a}</td>
               <td>{item.created_at}</td>
+              <td>{getRelativeTime(item.last_reviewed_at)}</td>
+              <td>{getRelativeTime(item.next_review_at)}</td>
               <td>
                 <button>del</button>
               </td>
@@ -184,6 +192,10 @@ const ReviewPage = () => {
     </div>
   )
 }
+
+const Setting = () => {
+  return <div className={`${layout_styles['fill-container']}`}></div>
+}
 const MainPages = ({ currentPage }: { currentPage: PageTags }) => {
   switch (currentPage) {
     case PageTags.Summary:
@@ -194,7 +206,7 @@ const MainPages = ({ currentPage }: { currentPage: PageTags }) => {
       break
       defaule: return <div>Default</div>
     case PageTags.Setting:
-      return <div>Setting</div>
+      return <Setting></Setting>
       break
   }
 }
