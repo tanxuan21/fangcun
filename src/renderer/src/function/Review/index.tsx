@@ -238,6 +238,7 @@ const ReviewPage = () => {
   }
   const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
   const [currentReviewItem, setCurrentReviewItem] = useState<ReviewItem>()
+  const [currentReviewItemIdx, setCurrentReviewItemIdx] = useState<number>(0)
   const [currentReviewData, setCurrentReviewData] = useState<Partial<Review>>({
     rate: ReviewRate.UnSelect,
     remark: '',
@@ -340,8 +341,10 @@ const ReviewPage = () => {
 
           return
         }
-        const item = reviewItemList[ReviewQueue.shift()]
-        console.log('新item', item)
+        const idx = ReviewQueue.shift()
+        setCurrentReviewItemIdx(idx)
+        const item = reviewItemList[idx]
+        console.log('新item', item, ReviewQueue)
         setCurrentReviewItem(item)
         // currentReviewData.item_id = item.id
         setCurrentReviewData({ ...currentReviewData, item_id: item.id })
@@ -366,9 +369,9 @@ const ReviewPage = () => {
   }
 
   const handleSubmit = async (currentStage: ReviewStages) => {
+    // 不必要写这个参数，可以直接访问 ref 但是既然已经传入了，算了。
     if (currentStage === ReviewStages.Check) setCurrentStage(ReviewStages.Submitting)
     try {
-      // TODO 网络请求成功，状态转移到 PrepareReviewItem
       const resp = await ReviewAxios.post('', {
         item_id: currentReviewDataRef.current.item_id,
         rate: currentReviewDataRef.current.rate,
@@ -377,7 +380,27 @@ const ReviewPage = () => {
       console.log('submit', resp)
       setCurrentStage(ReviewStages.PrepareReviewItem)
       clearCurrentReviewData()
-      // 否则，Disable
+      // TODO 根据setting的内容，将不会的内容传入队尾。
+      console.log(ReviewQueue)
+      if (currentReviewDataRef.current.rate === ReviewRate.trying) {
+        // 这里容易犯一个逻辑错误。用户选择 trying，就是希望后面再复习两次。如果队列里不足两次，向队尾插入到两次；如果大于等于两次，算了。
+
+        let count = 0
+        for (const i of ReviewQueue) if (i === currentReviewDataRef.current.item_id) count++
+        while (count < 2) {
+          count++
+          ReviewQueue.push(currentReviewItemIdx)
+        }
+        setReviewQueue([...ReviewQueue])
+      } else if (currentReviewDataRef.current.rate === ReviewRate.Icant) {
+        let count = 0
+        for (const i of ReviewQueue) if (i === currentReviewDataRef.current.item_id) count++
+        while (count < 3) {
+          count++
+          ReviewQueue.push(currentReviewItemIdx)
+        }
+        setReviewQueue([...ReviewQueue])
+      }
     } catch (e) {
       setCurrentStage(ReviewStages.Disable)
       console.error(e)
