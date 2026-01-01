@@ -29,7 +29,7 @@ export function asyncWrapper(
     // 核心函数体
     try {
       const result = await handler(req, res, next)
-      console.log(`[${req.method}] ${req.originalUrl}:`, result)
+      // console.log(`[${req.method}] ${req.originalUrl}:`, result)
       // 检查是否已经发送了响应，退出
       if (res.headersSent) return
 

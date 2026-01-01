@@ -4,6 +4,7 @@ import { makeSuccessRep } from '../utils'
 import { GET, POST, ExtendResponse } from '../utils/asyncHandler'
 import { AppError } from '../utils/AppError'
 import Response from 'express'
+import { GetReviewItemsMode } from '../../types/review/review'
 
 const router = Router()
 export default router
@@ -28,6 +29,9 @@ router.use((req, res, next) => {
 router.get(
   '/review-items',
   GET(async (req, res) => {
+    const mode = req.query['mode'] as GetReviewItemsMode
+    console.log('mode:', mode)
+    if (mode) return ReviewDataBaseInstance.get_review_items_with_mode(mode)
     return ReviewDataBaseInstance.get_all_review_items()
   })
 )
@@ -88,18 +92,17 @@ router.get(
   })
 )
 
-router.post('/reviews', (req, res) => {
-  try {
+router.post(
+  '/reviews',
+  POST(async (req, res) => {
     const result = ReviewDataBaseInstance.add_review(
       req.body.item_id,
       req.body.rate,
       req.body.remark
     )
-    makeSuccessRep(res, result)
-  } catch (e) {
-    res.status(500).send(e.message)
-  }
-})
+    return 'success!'
+  })
+)
 
 router.put('/reviews', (req, res) => {
   try {

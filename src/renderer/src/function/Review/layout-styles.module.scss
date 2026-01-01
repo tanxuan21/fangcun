@@ -40,6 +40,44 @@
   overflow: auto;
 }
 
+@mixin underline-animation($color: #000,
+  $height: 2px,
+  $start-width: 50%,
+  $end-width: 80%,
+  $position: bottom,
+  $duration: 0.3s,
+  $easing: ease-out) {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    #{$position}: 0;
+    left: 50%;
+    width: $start-width;
+    height: $height;
+    background-color: rgba($color, 0.5);
+    transform: translateX(-50%);
+    transition: all $duration $easing;
+    // opacity: 0.5;
+  }
+
+  &:hover::before,
+  &:focus::before,
+  &.active::before {
+    width: $end-width;
+    opacity: 1;
+    background-color: $color;
+  }
+
+  // 可选：添加额外的悬停效果
+  &:hover {
+    // 可以添加其他悬停效果
+  }
+}
 
 .review-main-container {
   color: #444;
@@ -64,6 +102,54 @@
       justify-content: space-between;
       padding: 0 20%;
       margin-bottom: 15px;
+
+      >.button {
+        padding: 5px 10px;
+        border: none;
+        outline: none;
+        background: #0000;
+        cursor: pointer;
+        border-radius: 5px;
+        $Ican-color: #0656eb;
+        $Icant-color: #d40404;
+        $trying-color: #ffc400;
+        font-size: 15px;
+
+        @mixin active-btn($color:#000) {
+          outline: 1px solid $color;
+          background: rgba($color, 0.3);
+        }
+
+        &.Ican {
+          &.active {
+            @include active-btn($Ican-color)
+          }
+
+          &.idle {
+            @include underline-animation($Ican-color, 2px, 30%, 70%, bottom, 0.3s, ease-out);
+          }
+        }
+
+        &.trying {
+          &.idle {
+            @include underline-animation($trying-color, 2px, 30%, 70%, bottom, 0.3s, ease-out);
+          }
+
+          &.active {
+            @include active-btn($trying-color)
+          }
+        }
+
+        &.Icant {
+          &.idle {
+            @include underline-animation($Icant-color, 2px, 30%, 70%, bottom, 0.3s, ease-out);
+          }
+
+          &.active {
+            @include active-btn($Icant-color)
+          }
+        }
+      }
     }
 
     .textarea-reminder {

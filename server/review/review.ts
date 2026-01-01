@@ -1,4 +1,6 @@
 import Database from 'better-sqlite3'
+import { GetReviewItemsMode } from '../../types/review/review'
+import { GetTodayTimeBegin2End } from '../utils/time'
 
 interface ReviewItem {
   id: number
@@ -28,7 +30,7 @@ class ReviewDatabase {
             rate INTEGER NOT NULL,  -- 用户对该 item 这次复习的掌握程度
             remark TEXT,            -- 用户对这次复习的备注
             item_id INTEGER NOT NULL,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            created_at TEXT DEFAULT (datetime('now', 'localtime')),
             FOREIGN KEY (item_id) REFERENCES review_items(id) ON DELETE CASCADE
         );
 
@@ -36,9 +38,9 @@ class ReviewDatabase {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type INTEGER NOT NULL,
             content TEXT NOT NULL, -- 用 json 灵活定义各种题型吧 ... ....
-            last_reviewed_at TEXT DEFAULT CURRENT_TIMESTAMP, -- 上次复习时间
-            next_review_at TEXT DEFAULT CURRENT_TIMESTAMP,   -- 安排的下次复习时间
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            last_reviewed_at TEXT DEFAULT (datetime('now', 'localtime')), -- 上次复习时间
+            next_review_at TEXT DEFAULT (datetime('now', 'localtime')),   -- 安排的下次复习时间
+            created_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
         `
     )
@@ -106,6 +108,21 @@ class ReviewDatabase {
         `
     )
     return stmt.all()
+  }
+
+  get_review_items_with_mode(mode: GetReviewItemsMode) {
+    if (mode === 'all') return this.get_all_review_items()
+    else if (mode === 'today-review') {
+      // 获取今天应该复习的列表
+      // next_review_at <= 今天 || last_reviewed_at === 今天 （复习计划早于等于今天 或者 今天已经复习的）
+      const { begin, end } = GetTodayTimeBegin2End()
+      const stmt = this.db.prepare(
+        `
+        SELECT * FROM review_items WHERE  last_reviewed_at >= ? AND last_reviewed_at <= ? OR next_review_at <= ? ORDER BY next_review_at ASC;
+        `
+      )
+      return stmt.all(begin, end, end)
+    }
   }
   delete_review_item(id: number) {
     const stmt = this.db.prepare(

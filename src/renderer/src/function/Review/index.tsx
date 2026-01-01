@@ -5,8 +5,12 @@ import Papa from 'papaparse'
 import axios from 'axios'
 import TextArea from 'antd/es/input/TextArea'
 import { useEffect, useRef, useState } from 'react'
-import { Button, Tag } from 'antd'
-import { getRelativeTime } from '@renderer/utils/time'
+import { Button, Empty, Tag } from 'antd'
+import { getRelativeTime, GetTodayTimeBegin2End } from '@renderer/utils/time'
+import { GetReviewItemsMode } from '../../../../../types/review/review'
+import { ReviewAxios, ReviewItemAxios } from './api'
+import { shuffleArray } from '@renderer/utils'
+import { cond, has, set } from 'lodash'
 
 enum PageTags {
   Review = 0,
@@ -113,7 +117,13 @@ interface ReviewItem {
   last_reviewed_at: string
   next_review_at: string
 }
-
+interface Review {
+  id: number
+  rate: number
+  remark: string
+  item_id: number
+  created_at: string
+}
 const SummaryPage = () => {
   const [summaryData, setSummaryData] = useState<ReviewItem[]>()
   useEffect(() => {
@@ -210,97 +220,231 @@ const SummaryPage = () => {
 const ReviewPage = () => {
   enum ReviewStages {
     Disable = 0, // 不可用。比如出现网络错误等情况
-    PrepareReviewItem, // 程序准备复习数据
+    PrepareReviewItem, // 程序准备复习数据，从队列里获取
     // 准备完毕，自动转移到复习界面
     Review, // 面对问题复习
     // 按按钮，选择自己是否掌握
     Check, // 检查答案，是是否掌握
     // 填写评论，必要时修改掌握按钮，提交此次复习
-    Submitting // 网络请求中
+    Submitting, // 网络请求中
+    Finish
+  }
+
+  enum ReviewRate {
+    Icant = 0,
+    trying = 1,
+    Ican = 2,
+    UnSelect
   }
   const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
   const [currentReviewItem, setCurrentReviewItem] = useState<ReviewItem>()
+  const [currentReviewData, setCurrentReviewData] = useState<Partial<Review>>({
+    rate: ReviewRate.UnSelect,
+    remark: '',
+    item_id: -1
+  })
+  // 为了键盘事件的引用
+  const currentStageRef = useRef(currentStage)
+  const currentReviewDataRef = useRef(currentReviewData)
+  useEffect(() => {
+    currentStageRef.current = currentStage
+  }, [currentStage])
+  useEffect(() => {
+    currentReviewDataRef.current = currentReviewData
+  }, [currentReviewData])
+  const clearCurrentReviewData = () => {
+    setCurrentReviewData({
+      rate: ReviewRate.UnSelect,
+      remark: '',
+      item_id: -1
+    })
+  }
+  const [reviewItemList, setReviewItemList] = useState<ReviewItem[]>([])
+  const [ReviewQueue, setReviewQueue] = useState<number[]>([])
+  const hasFetchedRef = useRef(false) // ref 标记，用于阻止严格模式下调用两次 useEffect 的副作用
   useEffect(() => {
     ;(async () => {
-      // TODO
-      // 获取当天复习的数据
-      // 获取成功，转移到prepareReviewItem状态，否则 Disable
-      setCurrentStage(ReviewStages.PrepareReviewItem)
+      try {
+        // 这里是拦不住的。因为useEffect调用两次，两次调用之间不会有阻塞。所以
+        // 两次调用都会看到空的 reviewItemQueue，并且请求数据
+        if (hasFetchedRef.current) {
+          console.warn('已经获取数据，请勿重复获取')
+          return
+        }
+        hasFetchedRef.current = true
+        const getParams: { mode: GetReviewItemsMode } = { mode: 'today-review' }
+        const result = await ReviewItemAxios.get('', {
+          params: getParams
+        })
+        const result_data = [
+          ...result.data.data.map((item) => ({
+            ...item,
+            content: JSON.parse(item.content) // 解析 content
+          }))
+        ].filter((item) => {
+          // 过滤掉不必复习的
+          const { begin, end } = GetTodayTimeBegin2End()
+          const condition = item.last_reviewed_at >= begin && item.last_reviewed_at <= end
+          return !condition
+        })
+        // console.log(result, result_data)
+        // 设置前端数据...
+        setReviewItemList(result_data)
+        for (let i = 0; i < result_data.length; i++) ReviewQueue.push(i)
+        shuffleArray(ReviewQueue)
+        setCurrentStage(ReviewStages.PrepareReviewItem)
+      } catch (e) {
+        setCurrentStage(ReviewStages.Disable)
+        console.error(e)
+      }
     })()
-  }, [])
 
+    // 快捷键事件
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const StateTransfer = () => {
+        if (currentStageRef.current === ReviewStages.Review) {
+          setCurrentStage(ReviewStages.Check)
+        }
+      }
+      console.log(e.key)
+      if (e.key === 'q') {
+        StateTransfer()
+        setCurrentReviewData({ ...currentReviewDataRef.current, rate: ReviewRate.Icant })
+      } else if (e.key === 'w') {
+        StateTransfer()
+        setCurrentReviewData({ ...currentReviewDataRef.current, rate: ReviewRate.trying })
+      } else if (e.key === 'e') {
+        StateTransfer()
+        setCurrentReviewData({ ...currentReviewDataRef.current, rate: ReviewRate.Ican })
+      } else if (e.key === 'Enter') {
+        // 提交
+        if (currentStageRef.current === ReviewStages.Check) {
+          handleSubmit(currentStageRef.current)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
   useEffect(() => {
     if (currentStage === ReviewStages.PrepareReviewItem) {
-      // 生成队列取出item，状态转移到 Review
-      setCurrentStage(ReviewStages.Review)
-      // 获取失败，转移到Disable状态
+      try {
+        // 生成队列取出item，状态转移到 Review
+        // 判断队列空
+        if (ReviewQueue.length === 0) {
+          setCurrentStage(ReviewStages.Finish)
+
+          return
+        }
+        const item = reviewItemList[ReviewQueue.shift()]
+        console.log('新item', item)
+        setCurrentReviewItem(item)
+        // currentReviewData.item_id = item.id
+        setCurrentReviewData({ ...currentReviewData, item_id: item.id })
+        setCurrentStage(ReviewStages.Review)
+        // 获取失败，转移到Disable状态
+      } catch (e) {
+        setCurrentStage(ReviewStages.Disable)
+        console.error(e)
+      }
     }
   }, [currentStage])
+
+  // 按钮高阶函数
+  const btnFn = (rateType: ReviewRate) => {
+    return () => {
+      if (currentStage === ReviewStages.Review) {
+        setCurrentStage(ReviewStages.Check)
+      }
+      if (currentStage === ReviewStages.Check || currentStage === ReviewStages.Review)
+        setCurrentReviewData({ ...currentReviewData, rate: rateType })
+    }
+  }
+
+  const handleSubmit = async (currentStage: ReviewStages) => {
+    if (currentStage === ReviewStages.Check) setCurrentStage(ReviewStages.Submitting)
+    try {
+      // TODO 网络请求成功，状态转移到 PrepareReviewItem
+      const resp = await ReviewAxios.post('', {
+        item_id: currentReviewDataRef.current.item_id,
+        rate: currentReviewDataRef.current.rate,
+        remark: currentReviewDataRef.current.remark
+      })
+      console.log('submit', resp)
+      setCurrentStage(ReviewStages.PrepareReviewItem)
+      clearCurrentReviewData()
+      // 否则，Disable
+    } catch (e) {
+      setCurrentStage(ReviewStages.Disable)
+      console.error(e)
+    }
+  }
   return (
     <div className={`${layout_styles['review-main-container']} ${layout_styles['fill-container']}`}>
-      {/* 问题展示区 */}
-      <div className={layout_styles['review-content-container']}>
-        <p className={layout_styles['review-q']}>
-          什么是可见（透明）寄存器？CPU 基本寄存器里，哪些可见，哪些不可见？为什么？
-        </p>
-        {currentStage === ReviewStages.Check && (
-          <p className={layout_styles['review-a']}>王道书 王道书 5.1.2 p207</p>
-        )}
-      </div>
-      {/* 操作区 */}
-      <div className={layout_styles['review-operation-container']}>
-        <div className={layout_styles['review-operation-button-rate-container']}>
-          {/* TODO 按钮组改为单选组 */}
-          <Button
-            onClick={() => {
-              if (currentStage === ReviewStages.Review) {
-                setCurrentStage(ReviewStages.Check)
-              }
-            }}
-            type="primary"
-          >
-            I can!
-          </Button>
-          <Button
-            onClick={() => {
-              if (currentStage === ReviewStages.Review) {
-                setCurrentStage(ReviewStages.Check)
-              }
-            }}
-            type="dashed"
-          >
-            trying...
-          </Button>
-          <Button
-            onClick={() => {
-              if (currentStage === ReviewStages.Review) {
-                setCurrentStage(ReviewStages.Check)
-              }
-            }}
-            type="text"
-            color="pink"
-            variant="filled"
-          >
-            I can't
-          </Button>
-        </div>
-        <p className={layout_styles['textarea-reminder']}>
-          something remark up about this review... ...
-        </p>
-        <TextArea rows={4} placeholder="I remenber... but..." />
-      </div>
-      <footer className={layout_styles['review-footer']}>
-        <Button
-          onClick={() => {
-            if (currentStage === ReviewStages.Check) setCurrentStage(ReviewStages.Submitting)
-            // TODO 网络请求成功，状态转移到 PrepareReviewItem
-            setCurrentStage(ReviewStages.PrepareReviewItem)
-            // 否则，Disable
-          }}
-        >
-          submit
-        </Button>
-      </footer>
+      {currentStage === ReviewStages.Finish ? (
+        <div>Conguratulaion! Finish</div>
+      ) : (
+        <>
+          {/* 问题展示区 */}
+          <div className={layout_styles['review-content-container']}>
+            {currentReviewItem ? (
+              <>
+                <p className={layout_styles['review-q']}>{currentReviewItem.content.q}</p>
+                {currentStage === ReviewStages.Check && (
+                  <p className={layout_styles['review-a']}>{currentReviewItem.content.a}</p>
+                )}
+              </>
+            ) : (
+              <Empty description="waiting..." />
+            )}
+          </div>
+          {/* 操作区 */}
+          <div className={layout_styles['review-operation-container']}>
+            <div className={layout_styles['review-operation-button-rate-container']}>
+              {/* TODO 按钮组改为单选组 */}
+
+              <button
+                className={`${layout_styles['button']} ${layout_styles['Icant']} ${currentReviewData.rate === ReviewRate.Icant ? layout_styles['active'] : layout_styles['idle']}`}
+                onClick={btnFn(ReviewRate.Icant)}
+              >
+                I can't
+              </button>
+              <button
+                className={`${layout_styles['button']} ${layout_styles['trying']} ${currentReviewData.rate === ReviewRate.trying ? layout_styles['active'] : layout_styles['idle']}`}
+                onClick={btnFn(ReviewRate.trying)}
+              >
+                trying...
+              </button>
+
+              <button
+                className={`${layout_styles['button']} ${layout_styles['Ican']} ${currentReviewData.rate === ReviewRate.Ican ? layout_styles['active'] : layout_styles['idle']}`}
+                onClick={btnFn(ReviewRate.Ican)}
+              >
+                I can!
+              </button>
+            </div>
+            <p className={layout_styles['textarea-reminder']}>
+              something remark up about this review... ...
+            </p>
+            <TextArea
+              rows={4}
+              onChange={(e) => {
+                currentReviewData.remark = e.target.value
+                setCurrentReviewData({ ...currentReviewData })
+              }}
+              value={currentReviewData.remark}
+              placeholder="I remenber... but..."
+            />
+          </div>
+          <footer className={layout_styles['review-footer']}>
+            <Button onClick={() => handleSubmit(currentStage)}>submit</Button>
+          </footer>
+        </>
+      )}
     </div>
   )
 }
