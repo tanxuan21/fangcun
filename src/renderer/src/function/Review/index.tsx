@@ -4,8 +4,8 @@ import styles from './styles.module.scss'
 import Papa from 'papaparse'
 import axios from 'axios'
 import TextArea from 'antd/es/input/TextArea'
-import { useEffect, useState } from 'react'
-import { Button } from 'antd'
+import { useEffect, useRef, useState } from 'react'
+import { Button, Tag } from 'antd'
 import { getRelativeTime } from '@renderer/utils/time'
 
 enum PageTags {
@@ -36,11 +36,6 @@ export const Review = () => {
             return value
           }
         })
-
-        // console.log('parse_result', parse_result.data)
-        // console.log('parse_result', parse_result.errors)
-        // 网络请求
-
         for (const item of parse_result.data) {
           const data = {
             type: 0,
@@ -59,30 +54,39 @@ export const Review = () => {
   }
 
   const [currentPage, setCurrentPage] = useState<PageTags>(PageTags.Summary)
+  const FileInputRef = useRef<HTMLInputElement>(null)
+  const [showAside, setShowAsider] = useState(true)
   return (
     <Template
       header={
         <header className={layout_styles['review-header']}>
-          <input
-            onChange={async (e) => {
-              if (e.target.files) {
-                setFiles(Array.from(e.target.files))
-                const file = e.target.files[0]
-                if (!file) return
-                ReadCSV(file)
-              }
-            }}
-            type="file"
-            id="fileInput"
-            accept=".txt,.csv,.json,.html,.js,.css,.xml"
-          ></input>
-          {/* <button
-            onClick={() => {
-              if (files && files.length >= 0) ReadCSV(files[0])
-            }}
-          >
-            刷新文件
-          </button> */}
+          <div className={layout_styles['review-page-layout-function-wrapper']}>
+            <span onClick={() => setShowAsider(!showAside)}>aside</span>
+            <input
+              style={{ display: 'none' }}
+              ref={FileInputRef}
+              onChange={async (e) => {
+                if (e.target.files) {
+                  setFiles(Array.from(e.target.files))
+                  const file = e.target.files[0]
+                  if (!file) return
+                  ReadCSV(file)
+
+                  e.target.value = ''
+                }
+              }}
+              type="file"
+              id="fileInput"
+              accept=".txt,.csv,.json,.html,.js,.css,.xml"
+            ></input>
+            <span
+              onClick={() => {
+                if (FileInputRef.current) FileInputRef.current.click()
+              }}
+            >
+              upload
+            </span>
+          </div>
           <div className={layout_styles['review-tags-wapper']}>
             <span onClick={() => setCurrentPage(PageTags.Review)}>review</span>
             <span onClick={() => setCurrentPage(PageTags.Summary)}>summary</span>
@@ -91,7 +95,7 @@ export const Review = () => {
         </header>
       }
       main={<MainPages currentPage={currentPage}></MainPages>}
-      asider={<aside className={layout_styles['review-asider']}></aside>}
+      asider={showAside && <aside className={layout_styles['review-asider']}></aside>}
       footer={<footer className={layout_styles['review-footer']}></footer>}
     />
   )
@@ -127,13 +131,53 @@ const SummaryPage = () => {
     })()
   }, [])
 
+  const QAtd = ({ q, a }: { q: string; a: string }) => {
+    return (
+      <div className={layout_styles['summary-table-qatd']}>
+        <div className={layout_styles['summary-table-q']}>{q}</div>
+        <div className={layout_styles['summary-table-a']}>{a}</div>
+      </div>
+    )
+  }
+  // 根据 type 分发 content 组件
+  const ContentTD = ({ id, type, content }: { id: number; type: number; content: Iqa }) => {
+    return (
+      <td className={` ${layout_styles['summary-table-content-td']}`}>
+        <button className={layout_styles['summary-table-edit-button']}>edit</button>
+        <QAtd q={content.q} a={content.a}></QAtd>
+      </td>
+    )
+  }
+
+  // state 组件
+  const StateTag = ({ item }: { item: ReviewItem }) => {
+    // 新添加的，未更新
+    // 今天需要复习 next_review_at <= today
+    // 今天复习完 last_reviewed_at === today
+    // 今天不必复习 next_review_at > today && last_reviewed_at < today
+    const nextDiff = getRelativeTime(item.next_review_at)
+    const lastDiff = getRelativeTime(item.last_reviewed_at)
+    if (nextDiff <= 0) return <Tag color="orange">today</Tag>
+    if (lastDiff === 0) return <Tag color="green">today</Tag>
+    if (lastDiff < 0) return <Tag color="blue">today</Tag>
+    return <Tag color="red">unsave</Tag>
+  }
+
+  const getRelativeTimeString = (timeString: string) => {
+    const relativeTime = getRelativeTime(timeString)
+    if (relativeTime === 0) return '今天'
+    else if (relativeTime > 0) return `${relativeTime}天后`
+    else return `${Math.abs(relativeTime)}天前`
+  }
   return (
-    <div className={`${layout_styles['table-container']} ${layout_styles['fill-container']}`}>
+    <div
+      className={`${layout_styles['summary-table-container']} ${layout_styles['fill-container']}`}
+    >
       <table>
         <thead>
           <tr>
-            <th>Question</th>
-            <th>Answer</th>
+            <th>state</th>
+            <th>Content</th>
             <th>created_at</th>
             <th>last_reviewed</th>
             <th>next_review</th>
@@ -143,11 +187,15 @@ const SummaryPage = () => {
         <tbody>
           {summaryData?.map((item) => (
             <tr key={item.id}>
-              <td>{item.content.q}</td>
-              <td>{item.content.a}</td>
+              <td>
+                <StateTag item={item}></StateTag>
+              </td>
+
+              <ContentTD id={item.id} type={item.type} content={item.content}></ContentTD>
+
               <td>{item.created_at}</td>
-              <td>{getRelativeTime(item.last_reviewed_at)}</td>
-              <td>{getRelativeTime(item.next_review_at)}</td>
+              <td>{getRelativeTimeString(item.last_reviewed_at)}</td>
+              <td>{getRelativeTimeString(item.next_review_at)}</td>
               <td>
                 <button>del</button>
               </td>

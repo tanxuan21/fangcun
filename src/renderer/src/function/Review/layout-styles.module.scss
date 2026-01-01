@@ -2,10 +2,14 @@
   display: flex;
   height: 50px;
   background: #797979;
+  color: #fff;
+  gap: 20px;
 
-  .review-uploader {
-    padding: 10px;
-    border: 1px solid #000000;
+  .review-page-layout-function-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 10px;
   }
 
   .review-tags-wapper {
@@ -15,15 +19,6 @@
     justify-content: space-between;
     gap: 10px;
     align-items: center;
-
-    &>* {
-      padding: 7px;
-      cursor: pointer;
-    }
-
-    &>:hover {
-      background: #00000033;
-    }
   }
 }
 
@@ -86,20 +81,50 @@
   }
 }
 
-td {
-  font-size: 13px;
-  padding: 10px;
-  border-bottom: 1px solid #00000033;
-  border-right: 1px solid #00000033;
-}
+.summary-table-container {
 
-th {
-  font-size: 13px;
-  padding: 10px;
-  border-bottom: 3px solid #00000033;
-  border-right: 1px solid #00000033;
-}
+  td {
+    font-size: 13px;
+    padding: 10px;
+    border-bottom: 1px solid #00000033;
+    border-right: 1px solid #00000033;
+  }
 
-table {
-  border-collapse: collapse;
+  // content td 样式
+  .summary-table-content-td {
+    position: relative;
+
+    // type 为 qa 的样式
+    .summary-table-qatd {
+      display: flex;
+      gap: 10px;
+
+      .summary-table-q {
+        flex: 1;
+        font-weight: bold;
+      }
+
+      .summary-table-a {
+        flex: 1;
+      }
+    }
+
+    // 编辑按钮样式
+    .summary-table-edit-button {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+  }
+
+  th {
+    font-size: 13px;
+    padding: 10px;
+    border-bottom: 3px solid #00000033;
+    border-right: 1px solid #00000033;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
 }

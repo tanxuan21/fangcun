@@ -3,7 +3,7 @@
  * @param timeString 格式如 "2026-01-01 03:00:41"
  * @returns 相对时间描述，如 "x天前"、"x天后"、"今天"
  */
-export function getRelativeTime(timeString: string): string {
+export function getRelativeTime(timeString: string): number {
   // 解析输入的时间字符串
   const inputTime = new Date(timeString)
 
@@ -18,14 +18,15 @@ export function getRelativeTime(timeString: string): string {
   const timeDiff = inputDate.getTime() - currentDate.getTime()
   const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
 
+  return dayDiff
   // 根据差值返回相应的描述
-  if (dayDiff === 0) {
-    return '今天'
-  } else if (dayDiff > 0) {
-    return `${dayDiff}天后`
-  } else {
-    return `${Math.abs(dayDiff)}天前`
-  }
+  //   if (dayDiff === 0) {
+  //     return '今天'
+  //   } else if (dayDiff > 0) {
+  //     return `${dayDiff}天后`
+  //   } else {
+  //     return `${Math.abs(dayDiff)}天前`
+  //   }
 }
 
 /**
@@ -78,23 +79,23 @@ export function getRelativeTimeDetailed(timeString: string): string {
 }
 
 // 测试示例
-const testCases = [
-  '2026-01-01 03:00:41', // 未来的某个日期
-  '2025-12-31 23:59:59', // 过去的某个日期
-  new Date().toISOString().replace('T', ' ').substring(0, 19) // 当前时间
-]
+// const testCases = [
+//   '2026-01-01 03:00:41', // 未来的某个日期
+//   '2025-12-31 23:59:59', // 过去的某个日期
+//   new Date().toISOString().replace('T', ' ').substring(0, 19) // 当前时间
+// ]
 
-console.log('简单版本:')
-testCases.forEach((timeStr) => {
-  console.log(`${timeStr} -> ${getRelativeTime(timeStr)}`)
-})
+// console.log('简单版本:')
+// testCases.forEach((timeStr) => {
+//   console.log(`${timeStr} -> ${getRelativeTime(timeStr)}`)
+// })
 
-console.log('\n详细版本:')
-testCases.forEach((timeStr) => {
-  console.log(`${timeStr} -> ${getRelativeTimeDetailed(timeStr)}`)
-})
+// console.log('\n详细版本:')
+// testCases.forEach((timeStr) => {
+//   console.log(`${timeStr} -> ${getRelativeTimeDetailed(timeStr)}`)
+// })
 
 // 或者直接导出一个默认函数
-export function formatRelativeTime(timeString: string, detailed: boolean = false): string {
-  return detailed ? getRelativeTimeDetailed(timeString) : getRelativeTime(timeString)
-}
+// export function formatRelativeTime(timeString: string, detailed: boolean = false): string {
+//   return detailed ? getRelativeTimeDetailed(timeString) : getRelativeTime(timeString)
+// }
