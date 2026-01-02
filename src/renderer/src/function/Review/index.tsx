@@ -7,10 +7,9 @@ import TextArea from 'antd/es/input/TextArea'
 import { useEffect, useRef, useState } from 'react'
 import { Button, Empty, Tag } from 'antd'
 import { getRelativeTime, GetTodayTimeBegin2End } from '@renderer/utils/time'
-import { GetReviewItemsMode } from '../../../../../types/review/review'
+import { GetReviewItemsMode, IReviewItem, IReview, Iqa } from '../../../../../types/review/review'
 import { ReviewAxios, ReviewItemAxios } from './api'
 import { shuffleArray } from '@renderer/utils'
-import { cond, has, set } from 'lodash'
 
 enum PageTags {
   Review = 0,
@@ -105,27 +104,8 @@ export const Review = () => {
   )
 }
 
-interface Iqa {
-  q: string
-  a: string
-}
-interface ReviewItem {
-  id: number
-  type: number
-  content: Iqa
-  created_at: string
-  last_reviewed_at: string
-  next_review_at: string
-}
-interface Review {
-  id: number
-  rate: number
-  remark: string
-  item_id: number
-  created_at: string
-}
 const SummaryPage = () => {
-  const [summaryData, setSummaryData] = useState<ReviewItem[]>()
+  const [summaryData, setSummaryData] = useState<IReviewItem[]>()
   useEffect(() => {
     ;(async () => {
       axios.get('http://localhost:3001/api/review-items').then((res) => {
@@ -160,16 +140,16 @@ const SummaryPage = () => {
   }
 
   // state 组件
-  const StateTag = ({ item }: { item: ReviewItem }) => {
+  const StateTag = ({ item }: { item: IReviewItem }) => {
     // 新添加的，未更新
     // 今天需要复习 next_review_at <= today
     // 今天复习完 last_reviewed_at === today
     // 今天不必复习 next_review_at > today && last_reviewed_at < today
     const nextDiff = getRelativeTime(item.next_review_at)
     const lastDiff = getRelativeTime(item.last_reviewed_at)
+    if (lastDiff === 0) return <Tag color="green">finish</Tag>
     if (nextDiff <= 0) return <Tag color="orange">today</Tag>
-    if (lastDiff === 0) return <Tag color="green">today</Tag>
-    if (lastDiff < 0) return <Tag color="blue">today</Tag>
+    if (lastDiff < 0) return <Tag color="blue">future</Tag>
     return <Tag color="red">unsave</Tag>
   }
 
@@ -217,6 +197,12 @@ const SummaryPage = () => {
   )
 }
 
+type PageReviewItem = IReviewItem & {
+  remains: number // 还剩几次今天的复习结束？结束时 remains 减到 0  时 更新 next_review_at last_reviewed_at
+  total_count: number // 用户今天还需要复习几次？根据 worseSelect 更新
+  worseSelect: number // 今天用户最差的选择，按钮/键盘 更新
+}
+
 const ReviewPage = () => {
   enum ReviewStages {
     Disable = 0, // 不可用。比如出现网络错误等情况
@@ -237,9 +223,9 @@ const ReviewPage = () => {
     UnSelect
   }
   const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
-  const [currentReviewItem, setCurrentReviewItem] = useState<ReviewItem>()
+  const [currentReviewItem, setCurrentReviewItem] = useState<PageReviewItem>()
   const [currentReviewItemIdx, setCurrentReviewItemIdx] = useState<number>(0)
-  const [currentReviewData, setCurrentReviewData] = useState<Partial<Review>>({
+  const [currentReviewData, setCurrentReviewData] = useState<Partial<IReview>>({
     rate: ReviewRate.UnSelect,
     remark: '',
     item_id: -1
@@ -260,7 +246,9 @@ const ReviewPage = () => {
       item_id: -1
     })
   }
-  const [reviewItemList, setReviewItemList] = useState<ReviewItem[]>([])
+  const [reviewItemList, setReviewItemList] = useState<
+    PageReviewItem[] // 需要一个最差的选择，根据此来更新 level。
+  >([])
   const [ReviewQueue, setReviewQueue] = useState<number[]>([])
   const hasFetchedRef = useRef(false) // ref 标记，用于阻止严格模式下调用两次 useEffect 的副作用
   useEffect(() => {
@@ -280,10 +268,13 @@ const ReviewPage = () => {
         const result_data = [
           ...result.data.data.map((item) => ({
             ...item,
+            worseSelect: ReviewRate.Ican,
+            total_count: 1,
+            remains: 1,
             content: JSON.parse(item.content) // 解析 content
           }))
         ].filter((item) => {
-          // 过滤掉不必复习的
+          // 过滤掉不必复习的。也就是今天已经复习过的
           const { begin, end } = GetTodayTimeBegin2End()
           const condition = item.last_reviewed_at >= begin && item.last_reviewed_at <= end
           return !condition
@@ -338,10 +329,9 @@ const ReviewPage = () => {
         // 判断队列空
         if (ReviewQueue.length === 0) {
           setCurrentStage(ReviewStages.Finish)
-
           return
         }
-        const idx = ReviewQueue.shift()
+        const idx = ReviewQueue.shift()!
         setCurrentReviewItemIdx(idx)
         const item = reviewItemList[idx]
         console.log('新item', item, ReviewQueue)
@@ -370,7 +360,8 @@ const ReviewPage = () => {
 
   const handleSubmit = async (currentStage: ReviewStages) => {
     // 不必要写这个参数，可以直接访问 ref 但是既然已经传入了，算了。
-    if (currentStage === ReviewStages.Check) setCurrentStage(ReviewStages.Submitting)
+    if (currentStage !== ReviewStages.Check) return
+    setCurrentStage(ReviewStages.Submitting)
     try {
       const resp = await ReviewAxios.post('', {
         item_id: currentReviewDataRef.current.item_id,
@@ -380,8 +371,7 @@ const ReviewPage = () => {
       console.log('submit', resp)
       setCurrentStage(ReviewStages.PrepareReviewItem)
       clearCurrentReviewData()
-      // TODO 根据setting的内容，将不会的内容传入队尾。
-      console.log(ReviewQueue)
+      // TODO 根据setting的内容，将不会的内容传入队尾，继续复习
       if (currentReviewDataRef.current.rate === ReviewRate.trying) {
         // 这里容易犯一个逻辑错误。用户选择 trying，就是希望后面再复习两次。如果队列里不足两次，向队尾插入到两次；如果大于等于两次，算了。
 
@@ -401,6 +391,9 @@ const ReviewPage = () => {
         }
         setReviewQueue([...ReviewQueue])
       }
+
+      // TODO 更新 next_review_at 字段。
+      // 这个是整个软件的核心
     } catch (e) {
       setCurrentStage(ReviewStages.Disable)
       console.error(e)

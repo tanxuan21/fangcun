@@ -1,20 +1,6 @@
 import Database from 'better-sqlite3'
-import { GetReviewItemsMode } from '../../types/review/review'
+import { GetReviewItemsMode, IReviewItem } from '../../types/review/review'
 import { GetTodayTimeBegin2End } from '../utils/time'
-
-interface ReviewItem {
-  id: number
-  type: number
-  content: string
-  created_at: string
-}
-interface Review {
-  id: number
-  rate: number
-  remark: string
-  item_id: number
-  created_at: string
-}
 
 class ReviewDatabase {
   private readonly db: Database.Database
@@ -36,10 +22,13 @@ class ReviewDatabase {
 
         CREATE TABLE IF NOT EXISTS review_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            level INTEGER DEFAULT 0, -- 掌握程度评分。根据此安排下次复习
             type INTEGER NOT NULL,
             content TEXT NOT NULL, -- 用 json 灵活定义各种题型吧 ... ....
             last_reviewed_at TEXT DEFAULT (datetime('now', 'localtime')), -- 上次复习时间
             next_review_at TEXT DEFAULT (datetime('now', 'localtime')),   -- 安排的下次复习时间
+            arrange_review_at TEXT DEFAULT (datetime('now', 'localtime')), -- 更新复习安排。这个是为了防止重复更新的。一天只允许更新一次。
+            updated_at TEXT DEFAULT (datetime('now', 'localtime')),         -- 更新时间
             created_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
         `
@@ -85,7 +74,7 @@ class ReviewDatabase {
         SELECT * FROM review_items WHERE type = ? AND content = ?;
         `
     )
-    const result = stmt_check.get(type, content) as ReviewItem
+    const result = stmt_check.get(type, content) as IReviewItem
     if (result) {
       return { success: false, id: result.id }
     }
