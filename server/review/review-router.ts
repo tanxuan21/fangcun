@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { ReviewDataBaseInstance } from '../database/database'
+import { ReviewDataBaseInstance, ReviewSetDataBaseInstance } from '../database/database'
 import { makeSuccessRep } from '../utils'
-import { GET, POST, ExtendResponse } from '../utils/asyncHandler'
+import { GET, POST, ExtendResponse, PUT, DELETE } from '../utils/asyncHandler'
 import { AppError } from '../utils/AppError'
 import Response from 'express'
 import { GetReviewItemsMode } from '../../types/review/review'
@@ -123,3 +123,79 @@ router.get('/reviews/:item_id', (req, res) => {
     res.status(500).send(e.message)
   }
 })
+
+// =====================================================================================================================
+
+router.get(
+  '/review-set',
+  GET(async (req, res) => {
+    return ReviewSetDataBaseInstance.get_all_review_sets()
+  })
+)
+
+router.post(
+  '/review-set',
+  POST(async (req, res) => {
+    return ReviewSetDataBaseInstance.add_review_set(
+      req.body.name,
+      req.body.description,
+      req.body.setting
+    )
+  })
+)
+
+router.put(
+  '/review-set',
+  PUT(async (req, res) => {
+    return ReviewSetDataBaseInstance.update_review_set(req.body)
+  })
+)
+
+router.delete(
+  '/review-set',
+  DELETE(async (req, res) => {
+    return ReviewSetDataBaseInstance.delete_review_set(req.body.id)
+  })
+)
+
+router.post(
+  '/review-set/add-review-item',
+  POST(async (req, res) => {
+    return ReviewSetDataBaseInstance.add_review_item_to_review_set(
+      req.body.review_set_id,
+      req.body.review_item_id
+    )
+  })
+)
+router.post(
+  '/review-set/delete-review-item',
+  POST(async (req, res) => {
+    return ReviewSetDataBaseInstance.delete_review_item_from_review_set(
+      req.body.review_set_id,
+      req.body.review_item_id
+    )
+  })
+)
+
+router.get(
+  '/review-set/review-items',
+  GET(async (req, res) => {
+    const set_id = req.query['set_id']
+    if (!set_id || typeof set_id !== 'string') throw AppError.badRequest('set_id is required')
+    return ReviewSetDataBaseInstance.get_all_review_items_in_review_set(parseInt(set_id))
+  })
+)
+
+router.delete(
+  '/review-set/review-items',
+  DELETE(async (req, res) => {
+    const set_id = req.query['set_id']
+    if (!set_id || typeof set_id !== 'string') throw AppError.badRequest('set_id is required')
+    const item_id = req.query['item_id']
+    if (!item_id || typeof item_id !== 'string') throw AppError.badRequest('item_id is required')
+    return ReviewSetDataBaseInstance.delete_review_item_from_review_set(
+      parseInt(set_id),
+      parseInt(item_id)
+    )
+  })
+)
