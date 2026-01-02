@@ -127,7 +127,7 @@ const generalPreload2Interface = (methods: any[]) => {
   ${preload_items.join(',\n')}
   }}`
 
-  fs.writeFile('type/general.d.ts', api_interface_code)
+  fs.writeFile('types/general.d.ts', api_interface_code)
   fs.writeFile('src/preload/general.ts', preload_code)
 }
 // 遍历所有模块
@@ -184,7 +184,7 @@ async function getAllFiles(dirPath: string): Promise<string[]> {
   general_main(names, paths)
   console.log('生成 main/general.ts 绑定 IPC 成功！')
   generalPreload2Interface(methods)
-  console.log('生成 preload/general.ts type/general.d.ts 成功！')
+  console.log('生成 preload/general.ts types/general.d.ts 成功！')
 })()
 
 // 生成 preload 的
