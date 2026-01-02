@@ -8,8 +8,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Button, Empty, Tag } from 'antd'
 import { getRelativeTime, GetTodayTimeBegin2End } from '@renderer/utils/time'
 import { GetReviewItemsMode, IReviewItem, IReview, Iqa } from '../../../../../types/review/review'
+import { ReviewRate } from '../../../../../common/review/index'
 import { ReviewAxios, ReviewItemAxios } from './api'
 import { shuffleArray } from '@renderer/utils'
+import { set } from 'lodash'
 
 enum PageTags {
   Review = 0,
@@ -106,6 +108,27 @@ export const Review = () => {
 
 const SummaryPage = () => {
   const [summaryData, setSummaryData] = useState<IReviewItem[]>()
+
+  enum SummaryType {
+    review_items = 0,
+    reviews
+  }
+
+  const [currentSummaryType, setCurrentSummaryType] = useState(SummaryType.review_items)
+
+  // 复习数据
+  const [currentReviewItemId, setCurrentReviewItemId] = useState<number>(0)
+  const [reviewsList, setReviewList] = useState<IReview[]>([])
+  useEffect(() => {
+    ;(async () => {
+      const res = await ReviewAxios.get('', {
+        params: {
+          item_id: currentReviewItemId
+        }
+      })
+      setReviewList(res.data.data)
+    })()
+  }, [currentReviewItemId])
   useEffect(() => {
     ;(async () => {
       axios.get('http://localhost:3001/api/review-items').then((res) => {
@@ -121,7 +144,7 @@ const SummaryPage = () => {
     })()
   }, [])
 
-  const QAtd = ({ q, a }: { q: string; a: string }) => {
+  const QA = ({ q, a }: { q: string; a: string }) => {
     return (
       <div className={layout_styles['summary-table-qatd']}>
         <div className={layout_styles['summary-table-q']}>{q}</div>
@@ -134,7 +157,7 @@ const SummaryPage = () => {
     return (
       <td className={` ${layout_styles['summary-table-content-td']}`}>
         <button className={layout_styles['summary-table-edit-button']}>edit</button>
-        <QAtd q={content.q} a={content.a}></QAtd>
+        <QA q={content.q} a={content.a}></QA>
       </td>
     )
   }
@@ -163,36 +186,80 @@ const SummaryPage = () => {
     <div
       className={`${layout_styles['summary-table-container']} ${layout_styles['fill-container']}`}
     >
-      <table>
-        <thead>
-          <tr>
-            <th>state</th>
-            <th>Content</th>
-            <th>created_at</th>
-            <th>last_reviewed</th>
-            <th>next_review</th>
-            <th>Oper</th>
-          </tr>
-        </thead>
-        <tbody>
-          {summaryData?.map((item) => (
-            <tr key={item.id}>
-              <td>
-                <StateTag item={item}></StateTag>
-              </td>
+      <header className={layout_styles['controller-header']}>
+        <button onClick={() => setCurrentSummaryType(SummaryType.review_items)}>back</button>
+      </header>
+      {summaryData && (
+        <>
+          {currentSummaryType === SummaryType.review_items ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>state</th>
+                  <th>Content</th>
+                  <th>created_at</th>
+                  <th>last_reviewed</th>
+                  <th>next_review</th>
+                  <th>level</th>
+                  <th>arrange_at</th>
+                  <th>Oper</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summaryData?.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <StateTag item={item}></StateTag>
+                    </td>
 
-              <ContentTD id={item.id} type={item.type} content={item.content}></ContentTD>
+                    <ContentTD id={item.id} type={item.type} content={item.content}></ContentTD>
 
-              <td>{item.created_at}</td>
-              <td>{getRelativeTimeString(item.last_reviewed_at)}</td>
-              <td>{getRelativeTimeString(item.next_review_at)}</td>
-              <td>
-                <button>del</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                    <td>{item.created_at}</td>
+                    <td>{getRelativeTimeString(item.last_reviewed_at)}</td>
+                    <td>{getRelativeTimeString(item.next_review_at)}</td>
+                    <td>{item.level}</td>
+                    <td>{getRelativeTimeString(item.arrange_review_at)}</td>
+                    <td>
+                      <div className={layout_styles['operation-container']}>
+                        <button>del</button>
+                        <button
+                          onClick={() => {
+                            setCurrentReviewItemId(item.id)
+                            setCurrentSummaryType(SummaryType.reviews)
+                          }}
+                        >
+                          review
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <>
+              <table>
+                <thead>
+                  <tr>
+                    <th>create_at</th>
+                    <th>rate</th>
+                    <th>remark</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reviewsList.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.created_at}</td>
+                      <td>{item.rate}</td>
+                      <td>{item.remark}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -216,12 +283,6 @@ const ReviewPage = () => {
     Finish
   }
 
-  enum ReviewRate {
-    Icant = 0,
-    trying = 1,
-    Ican = 2,
-    UnSelect
-  }
   const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
   const [currentReviewItem, setCurrentReviewItem] = useState<PageReviewItem>()
   const [currentReviewItemIdx, setCurrentReviewItemIdx] = useState<number>(0)
@@ -368,29 +429,64 @@ const ReviewPage = () => {
         rate: currentReviewDataRef.current.rate,
         remark: currentReviewDataRef.current.remark
       })
-      console.log('submit', resp)
-      setCurrentStage(ReviewStages.PrepareReviewItem)
-      clearCurrentReviewData()
+      //console.log('submit', resp)
+      console.log(ReviewQueue)
       // TODO 根据setting的内容，将不会的内容传入队尾，继续复习
       if (currentReviewDataRef.current.rate === ReviewRate.trying) {
         // 这里容易犯一个逻辑错误。用户选择 trying，就是希望后面再复习两次。如果队列里不足两次，向队尾插入到两次；如果大于等于两次，算了。
 
         let count = 0
-        for (const i of ReviewQueue) if (i === currentReviewDataRef.current.item_id) count++
+        for (const i of ReviewQueue) if (i === currentReviewItemIdx) count++
+
         while (count < 2) {
           count++
           ReviewQueue.push(currentReviewItemIdx)
         }
         setReviewQueue([...ReviewQueue])
+
+        // 这里得设置 ReviewItemList 的内容
+        if (currentReviewItem)
+          setCurrentReviewItem({ ...currentReviewItem, remains: count, total_count: count })
+        setReviewItemList([
+          ...reviewItemList.map((item, idx) => {
+            if (idx === currentReviewItemIdx) return { ...item, remains: count, total_count: count }
+            return item
+          })
+        ])
       } else if (currentReviewDataRef.current.rate === ReviewRate.Icant) {
         let count = 0
-        for (const i of ReviewQueue) if (i === currentReviewDataRef.current.item_id) count++
+        for (const i of ReviewQueue) if (i === currentReviewItemIdx) count++
         while (count < 3) {
           count++
           ReviewQueue.push(currentReviewItemIdx)
         }
         setReviewQueue([...ReviewQueue])
+        if (currentReviewItem)
+          setCurrentReviewItem({ ...currentReviewItem, remains: count, total_count: count })
+        setReviewItemList([
+          ...reviewItemList.map((item, idx) => {
+            if (idx === currentReviewItemIdx) return { ...item, remains: count, total_count: count }
+            return item
+          })
+        ])
+      } else if (currentReviewDataRef.current.rate === ReviewRate.Ican) {
+        if (currentReviewItem)
+          setCurrentReviewItem({ ...currentReviewItem, remains: currentReviewItem.remains - 1 })
+        setReviewItemList([
+          ...reviewItemList.map((item, idx) => {
+            if (idx === currentReviewItemIdx) return { ...item, remains: item.remains - 1 }
+            return item
+          })
+        ])
       }
+
+      const arrange_resp = await ReviewItemAxios.post('/arrange', {
+        id: currentReviewDataRef.current.item_id
+      })
+      console.log('arrange', arrange_resp)
+
+      setCurrentStage(ReviewStages.PrepareReviewItem)
+      clearCurrentReviewData()
 
       // TODO 更新 next_review_at 字段。
       // 这个是整个软件的核心
@@ -402,14 +498,19 @@ const ReviewPage = () => {
   return (
     <div className={`${layout_styles['review-main-container']} ${layout_styles['fill-container']}`}>
       {currentStage === ReviewStages.Finish ? (
-        <div>Conguratulaion! Finish</div>
+        <div className={layout_styles['review-finish-page-container']}>Congratulation! Finish</div>
       ) : (
         <>
           {/* 问题展示区 */}
           <div className={layout_styles['review-content-container']}>
             {currentReviewItem ? (
               <>
-                <p className={layout_styles['review-q']}>{currentReviewItem.content.q}</p>
+                <p className={layout_styles['review-q']}>
+                  {currentReviewItem.content.q}
+                  <span
+                    className={layout_styles['review-item-progresser']}
+                  >{`${currentReviewItem.total_count - currentReviewItem.remains}/${currentReviewItem.total_count}`}</span>
+                </p>
                 {currentStage === ReviewStages.Check && (
                   <p className={layout_styles['review-a']}>{currentReviewItem.content.a}</p>
                 )}

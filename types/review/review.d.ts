@@ -1,3 +1,4 @@
+import { ReviewRate } from '../../common/review/index'
 // 获取 review-items 的模式字面量
 
 // 所有的 | 今天复习的 |
@@ -18,11 +19,12 @@ export interface IReviewItem {
   last_reviewed_at: string
   next_review_at: string
   created_at: string
+  arrange_review_at: string
   updated_at: string
 }
 export interface IReview {
   id: number
-  rate: number
+  rate: ReviewRate
   remark: string
   item_id: number
   created_at: string

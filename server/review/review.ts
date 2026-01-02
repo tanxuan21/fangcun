@@ -1,6 +1,10 @@
 import Database from 'better-sqlite3'
-import { GetReviewItemsMode, IReviewItem } from '../../types/review/review'
+import type { GetReviewItemsMode, IReview, IReviewItem } from '../../types/review/review.d.ts'
+
 import { GetTodayTimeBegin2End } from '../utils/time'
+import { daysAfterToday, getTodayDate } from '../utils'
+import { formatDateTime } from '../../src/renderer/src/utils/index'
+import { ReviewRate } from '../../common/review/index'
 
 class ReviewDatabase {
   private readonly db: Database.Database
@@ -128,6 +132,72 @@ class ReviewDatabase {
         `
     )
     stmt.run(updates.type, updates.content, id)
+  }
+
+  arrange_review_item(id: number) {
+    const { begin, end } = GetTodayTimeBegin2End()
+    // 取出今天的 review 数据，review_item 数据
+    const getreview = this.db.prepare(
+      'SELECT * FROM review WHERE item_id = ? AND created_at >= ? AND created_at <= ?;'
+    )
+    const reviews = getreview.all(id, begin, end) as IReview[]
+    console.log('reviews:', reviews)
+    const review_item = this.db
+      .prepare('SELECT * FROM review_items WHERE id = ?;')
+      .get(id) as IReviewItem
+    // 如果 review_item 的 arrange_review_at === today，不做处理。
+    if (review_item.arrange_review_at === getTodayDate())
+      return { message: `id: ${id} today-review-already-arranged` }
+
+    // 简单策略：获取今天最差的那个 rate，然后
+    let worst_rate = ReviewRate.Ican
+    for (const rv of reviews) {
+      if (rv.rate === ReviewRate.UnSelect)
+        throw new Error('用户未选择复习等级，请选择复习等级，这个review数据不应该接收。检查代码')
+      if (rv.rate < worst_rate) worst_rate = rv.rate
+    }
+    // 根据这个rate，更新level
+    let new_level = review_item.level + worst_rate - 1 // trying 保持 level；Ican't 减一； Ican 加一
+    new_level = Math.min(Math.max(new_level, 0), 23)
+    // TODO 获取 setting。根据 setting 里的配置表，根据 level 获取下次复习时间
+    const level2days = {
+      0: 1,
+      1: 2,
+      2: 3, // diff = 1
+      3: 5,
+      4: 7,
+      5: 9, // diff = 2
+      6: 12,
+      7: 15,
+      8: 18, // diff = 3
+      9: 22,
+      10: 26,
+      11: 30, // diff = 4
+      12: 32,
+      13: 36,
+      14: 42, // diff = 5
+      15: 50,
+      16: 60,
+      17: 70,
+      18: 80, // diff = 6
+      19: 90,
+      20: 100,
+      21: 120,
+      22: 140, // diff = 7
+      23: 160
+    }
+    const todayTimeStr = formatDateTime()
+    const next_review_at = daysAfterToday(level2days[new_level])
+    const stmt = this.db.prepare(
+      'UPDATE review_items SET arrange_review_at = ?,last_reviewed_at=?,next_review_at=?,updated_at=?,level=?  WHERE id = ?;'
+    )
+    stmt.run(todayTimeStr, todayTimeStr, next_review_at, todayTimeStr, new_level, id)
+
+    return {
+      new_level,
+      next_review_at,
+      message: `id: ${id} arranged-success`
+    }
   }
 }
 
