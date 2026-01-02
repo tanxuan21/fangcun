@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { Review } from './index'
 
 export const ReviewAxios = axios.create({
   baseURL: 'http://localhost:3001/api/reviews',
@@ -9,6 +10,14 @@ export const ReviewAxios = axios.create({
 })
 export const ReviewItemAxios = axios.create({
   baseURL: 'http://localhost:3001/api/review-items',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+export const ReviewSetAxios = axios.create({
+  baseURL: 'http://localhost:3001/api/review-set',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

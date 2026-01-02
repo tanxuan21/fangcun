@@ -3,9 +3,7 @@ import { ReviewDataBaseInstance, ReviewSetDataBaseInstance } from '../database/d
 import { makeSuccessRep } from '../utils'
 import { GET, POST, ExtendResponse, PUT, DELETE } from '../utils/asyncHandler'
 import { AppError } from '../utils/AppError'
-import Response from 'express'
 import { GetReviewItemsMode } from '../../types/review/review'
-
 const router = Router()
 export default router
 
@@ -154,7 +152,9 @@ router.put(
 router.delete(
   '/review-set',
   DELETE(async (req, res) => {
-    return ReviewSetDataBaseInstance.delete_review_set(req.body.id)
+    const set_id = req.query['set_id']
+    if (!set_id || typeof set_id !== 'string') throw AppError.badRequest('set_id is required')
+    return ReviewSetDataBaseInstance.delete_review_set(parseInt(set_id))
   })
 )
 

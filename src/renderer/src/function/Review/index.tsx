@@ -7,9 +7,15 @@ import TextArea from 'antd/es/input/TextArea'
 import { useEffect, useRef, useState } from 'react'
 import { Button, Empty, Tag } from 'antd'
 import { getRelativeTime, GetTodayTimeBegin2End } from '@renderer/utils/time'
-import { GetReviewItemsMode, IReviewItem, IReview, Iqa } from '../../../../../types/review/review'
+import {
+  GetReviewItemsMode,
+  IReviewItem,
+  IReview,
+  Iqa,
+  IReviewSet
+} from '../../../../../types/review/review'
 import { ReviewRate } from '../../../../../common/review/index'
-import { ReviewAxios, ReviewItemAxios } from './api'
+import { ReviewAxios, ReviewItemAxios, ReviewSetAxios } from './api'
 import { shuffleArray } from '@renderer/utils'
 import { set } from 'lodash'
 
@@ -61,6 +67,8 @@ export const Review = () => {
   const [currentPage, setCurrentPage] = useState<PageTags>(PageTags.Summary)
   const FileInputRef = useRef<HTMLInputElement>(null)
   const [showAside, setShowAsider] = useState(true)
+
+  // TODO 设置 set_id。 往后的所有步骤都随着 set_id 变更。
   return (
     <Template
       header={
@@ -100,9 +108,80 @@ export const Review = () => {
         </header>
       }
       main={<MainPages currentPage={currentPage}></MainPages>}
-      asider={showAside && <aside className={layout_styles['review-asider']}></aside>}
+      asider={showAside && <ReviewAsider></ReviewAsider>}
       footer={<footer className={layout_styles['review-footer']}></footer>}
     />
+  )
+}
+
+const ReviewAsider = () => {
+  const [reviewSetList, setReviewSetList] = useState<IReviewSet[]>([])
+  const [currentReviewSet, SetCurrentReviewSet] = useState<IReviewSet>()
+  useEffect(() => {
+    ;(async () => {
+      const data = await ReviewSetAxios.get('')
+      console.log('review set list', data.data.data)
+      setReviewSetList(data.data.data)
+    })()
+  }, [])
+  return (
+    <aside className={layout_styles['review-asider']}>
+      <header className={layout_styles['review-asider-header']}>
+        {currentReviewSet && (
+          <>
+            <p>{currentReviewSet.name}</p>
+            <br />
+            <p>{currentReviewSet.description}</p>
+            <p>create_at: {currentReviewSet.created_at}</p>
+          </>
+        )}
+      </header>
+      <main className={layout_styles['review-asider-main']}>
+        {reviewSetList.map((item) => (
+          <div
+            className={layout_styles['review-set-card-container']}
+            onClick={() => {
+              SetCurrentReviewSet(item)
+            }}
+          >
+            <p>{item.name}</p>
+            <button>add</button>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation()
+                const resp = await ReviewSetAxios.delete(``, { params: { set_id: item.id } })
+                if (resp.status == 204) {
+                  setReviewSetList((prev) => [
+                    ...reviewSetList.filter((item2) => item2.id !== item.id)
+                  ])
+                } else {
+                  console.log(resp)
+                }
+              }}
+            >
+              del
+            </button>
+          </div>
+        ))}
+      </main>
+      <footer className={layout_styles['review-asider-footer']}>
+        <button
+          onClick={async () => {
+            const defaultSet = {
+              name: 'default' + Math.floor(Math.random() * 1000),
+              description: 'default',
+              setting: 'default'
+            }
+            const resp = await ReviewSetAxios.post('', defaultSet)
+            console.log('add review set', resp.data)
+            // 如果添加成功，同步更新前端列表
+            if (resp.status == 201) setReviewSetList([...reviewSetList, resp.data.data])
+          }}
+        >
+          add
+        </button>
+      </footer>
+    </aside>
   )
 }
 
@@ -487,9 +566,6 @@ const ReviewPage = () => {
 
       setCurrentStage(ReviewStages.PrepareReviewItem)
       clearCurrentReviewData()
-
-      // TODO 更新 next_review_at 字段。
-      // 这个是整个软件的核心
     } catch (e) {
       setCurrentStage(ReviewStages.Disable)
       console.error(e)
@@ -522,8 +598,6 @@ const ReviewPage = () => {
           {/* 操作区 */}
           <div className={layout_styles['review-operation-container']}>
             <div className={layout_styles['review-operation-button-rate-container']}>
-              {/* TODO 按钮组改为单选组 */}
-
               <button
                 className={`${layout_styles['button']} ${layout_styles['Icant']} ${currentReviewData.rate === ReviewRate.Icant ? layout_styles['active'] : layout_styles['idle']}`}
                 onClick={btnFn(ReviewRate.Icant)}

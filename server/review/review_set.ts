@@ -1,20 +1,5 @@
 import Database from 'better-sqlite3'
-
-interface IReviewSet {
-  id: number
-  name: string
-  description: string
-  created_at: string
-  updated_at: string
-  setting: string
-}
-
-interface IReviewSet2ReviewItem {
-  id: number
-  review_item_id: number
-  review_set_id: number
-  created_at: string
-}
+import { IReviewSet } from '../../types/review/review'
 
 class ReviewSetDatabase {
   private readonly db: Database.Database
@@ -46,8 +31,10 @@ class ReviewSetDatabase {
     )
   }
   add_review_set(name: string, description: string, setting: string) {
-    const stmt = this.db.prepare(`INSERT INTO review_set (name, description) VALUES (?, ?)`)
-    return stmt.run(name, description)
+    const stmt = this.db.prepare(
+      `INSERT INTO review_set (name, description,setting) VALUES (?, ?,?) RETURNING *`
+    )
+    return stmt.get(name, description, setting)
   }
   get_all_review_sets() {
     const stmt = this.db.prepare(`SELECT * FROM review_set`)

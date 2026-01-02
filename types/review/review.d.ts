@@ -29,3 +29,19 @@ export interface IReview {
   item_id: number
   created_at: string
 }
+
+export interface IReviewSet {
+  id: number
+  name: string
+  description: string
+  created_at: string
+  updated_at: string
+  setting: string
+}
+
+export interface IReviewSet2ReviewItem {
+  id: number
+  review_item_id: number
+  review_set_id: number
+  created_at: string
+}
