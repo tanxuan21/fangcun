@@ -103,18 +103,29 @@ class ReviewDatabase {
     return stmt.all()
   }
 
-  get_review_items_with_mode(mode: GetReviewItemsMode) {
+  get_review_items_with_mode(mode: GetReviewItemsMode, set_id: number) {
     if (mode === 'all') return this.get_all_review_items()
     else if (mode === 'today-review') {
       // 获取今天应该复习的列表
       // next_review_at <= 今天 || last_reviewed_at === 今天 （复习计划早于等于今天 或者 今天已经复习的）
       const { begin, end } = GetTodayTimeBegin2End()
-      const stmt = this.db.prepare(
-        `
-        SELECT * FROM review_items WHERE  last_reviewed_at >= ? AND last_reviewed_at <= ? OR next_review_at <= ? ORDER BY next_review_at ASC;
-        `
-      )
-      return stmt.all(begin, end, end)
+      // 还要查询是否再review_set，如何多表查询？
+      const stmt = this.db.prepare(`
+            SELECT ri.* 
+            FROM review_items ri
+            WHERE ri.id IN (
+                SELECT review_item_id 
+                FROM review_items2review_set 
+                WHERE review_set_id = ?
+            )
+            AND (
+                (ri.last_reviewed_at >= ? AND ri.last_reviewed_at <= ?)
+                OR ri.next_review_at <= ?
+            )
+            ORDER BY ri.next_review_at ASC
+        `)
+
+      return stmt.all(set_id, begin, end, end)
     }
   }
   delete_review_item(id: number) {

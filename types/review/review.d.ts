@@ -36,7 +36,7 @@ export interface IReviewSet {
   description: string
   created_at: string
   updated_at: string
-  setting: string
+  setting: any
 }
 
 export interface IReviewSet2ReviewItem {

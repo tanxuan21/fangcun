@@ -28,8 +28,11 @@ router.get(
   '/review-items',
   GET(async (req, res) => {
     const mode = req.query['mode'] as GetReviewItemsMode
-    console.log('mode:', mode)
-    if (mode) return ReviewDataBaseInstance.get_review_items_with_mode(mode)
+    const review_set_id = req.query['review_set_id']
+    if (!review_set_id || typeof review_set_id !== 'string')
+      throw AppError.badRequest('review_set_id is required')
+    if (mode)
+      return ReviewDataBaseInstance.get_review_items_with_mode(mode, parseInt(review_set_id))
     return ReviewDataBaseInstance.get_all_review_items()
   })
 )
@@ -167,9 +170,9 @@ router.post(
     )
   })
 )
-router.post(
+router.delete(
   '/review-set/delete-review-item',
-  POST(async (req, res) => {
+  DELETE(async (req, res) => {
     return ReviewSetDataBaseInstance.delete_review_item_from_review_set(
       req.body.review_set_id,
       req.body.review_item_id

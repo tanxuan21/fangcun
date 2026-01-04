@@ -4,7 +4,7 @@ import styles from './styles.module.scss'
 import Papa from 'papaparse'
 import axios from 'axios'
 import TextArea from 'antd/es/input/TextArea'
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { Button, Empty, Tag } from 'antd'
 import { getRelativeTime, GetTodayTimeBegin2End } from '@renderer/utils/time'
 import {
@@ -17,52 +17,67 @@ import {
 import { ReviewRate } from '../../../../../common/review/index'
 import { ReviewAxios, ReviewItemAxios, ReviewSetAxios } from './api'
 import { shuffleArray } from '@renderer/utils'
-import { set } from 'lodash'
+import { EditableInput } from '../../components/Editable/EditableInput/EditableInput'
+import { ReviewSetContext, useReviewSet } from './ctx'
+import React from 'react'
+import { set, sum } from 'lodash'
+import { DefaultSetting, Setting } from './Setting'
 
 enum PageTags {
   Review = 0,
   Summary,
   Setting
 }
+
+const ReadCSV = (file: File, handleData: (datas: any[]) => Promise<void>) => {
+  // 文件读取器
+  const reader = new FileReader()
+  reader.onload = async (e) => {
+    console.log('result', e.target?.result)
+    const result = e.target?.result
+    if (result) {
+      const parse_result = Papa.parse<{ q: string; a: string }>(result as string, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true, // 自动类型转换
+        transformHeader: (header) => header.trim(), // 清理表头
+        transform: (value: string, field: string | number) => {
+          // 自定义转换
+          if (field === 'isActive') {
+            return value.toLowerCase() === 'true'
+          }
+          return value
+        }
+      })
+      handleData(parse_result.data)
+      //   for (const item of parse_result.data) {
+      //     const data = {
+      //       type: 0,
+      //       content: JSON.stringify({ q: item.q, a: item.a }, null, 2)
+      //     }
+
+      //     const resp = await axios.post('http://localhost:3001/api/review-items', data)
+      //     console.log(resp)
+      //   }
+    }
+  }
+  reader.onerror = (e) => {
+    console.log(e)
+  }
+  reader.readAsText(file)
+}
+
+export const ReviewWithContext = () => {
+  const [reviewSet, setReviewSet] = React.useState<IReviewSet | null>(null)
+
+  return (
+    <ReviewSetContext.Provider value={{ reviewSet, setReviewSet }}>
+      <Review></Review>
+    </ReviewSetContext.Provider>
+  )
+}
 export const Review = () => {
   const [files, setFiles] = useState<File[]>([])
-
-  const ReadCSV = (file: File) => {
-    // 文件读取器
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      console.log('result', e.target?.result)
-      const result = e.target?.result
-      if (result) {
-        const parse_result = Papa.parse<{ q: string; a: string }>(result as string, {
-          header: true,
-          skipEmptyLines: true,
-          dynamicTyping: true, // 自动类型转换
-          transformHeader: (header) => header.trim(), // 清理表头
-          transform: (value: string, field: string | number) => {
-            // 自定义转换
-            if (field === 'isActive') {
-              return value.toLowerCase() === 'true'
-            }
-            return value
-          }
-        })
-        for (const item of parse_result.data) {
-          const data = {
-            type: 0,
-            content: JSON.stringify({ q: item.q, a: item.a }, null, 2)
-          }
-
-          const resp = await axios.post('http://localhost:3001/api/review-items', data)
-          console.log(resp)
-        }
-      }
-    }
-    reader.onerror = (e) => {
-      console.log(e)
-    }
-    reader.readAsText(file)
-  }
 
   const [currentPage, setCurrentPage] = useState<PageTags>(PageTags.Summary)
   const FileInputRef = useRef<HTMLInputElement>(null)
@@ -83,8 +98,17 @@ export const Review = () => {
                   setFiles(Array.from(e.target.files))
                   const file = e.target.files[0]
                   if (!file) return
-                  ReadCSV(file)
+                  ReadCSV(file, async (datas) => {
+                    for (const item of datas) {
+                      const data = {
+                        type: 0,
+                        content: JSON.stringify({ q: item.q, a: item.a }, null, 2)
+                      }
 
+                      const resp = await axios.post('http://localhost:3001/api/review-items', data)
+                      console.log(resp)
+                    }
+                  })
                   e.target.value = ''
                 }
               }}
@@ -116,38 +140,87 @@ export const Review = () => {
 
 const ReviewAsider = () => {
   const [reviewSetList, setReviewSetList] = useState<IReviewSet[]>([])
-  const [currentReviewSet, SetCurrentReviewSet] = useState<IReviewSet>()
+  const { reviewSet, setReviewSet } = useReviewSet()
   useEffect(() => {
     ;(async () => {
       const data = await ReviewSetAxios.get('')
-      console.log('review set list', data.data.data)
-      setReviewSetList(data.data.data)
+      const raw_list = data.data.data
+
+      setReviewSetList([
+        ...raw_list.map((item) => {
+          try {
+            // TODO 解析setting 格式。是否有误/缺失
+            const setting = JSON.parse(item.setting)
+            console.log('setting', setting)
+            return { ...item, setting }
+          } catch (e) {
+            return { ...item, setting: DefaultSetting }
+          }
+        })
+      ])
     })()
   }, [])
+
   return (
     <aside className={layout_styles['review-asider']}>
       <header className={layout_styles['review-asider-header']}>
-        {currentReviewSet && (
+        {reviewSet && (
           <>
-            <p>{currentReviewSet.name}</p>
+            <EditableInput
+              styles={{ fontSize: '20px', fontWeight: 'bold' }}
+              text={reviewSet.name}
+              updateText={(v) => {
+                setReviewSet({ ...reviewSet, name: v })
+              }}
+              saveText={async (v) => {
+                if (!v) return
+                const resp = await ReviewSetAxios.put('', { id: reviewSet.id, name: v })
+                console.log(resp)
+                setReviewSet({ ...reviewSet, name: v })
+                setReviewSetList(
+                  reviewSetList.map((item) => (item.id === reviewSet.id ? { ...reviewSet } : item))
+                )
+              }}
+            ></EditableInput>
             <br />
-            <p>{currentReviewSet.description}</p>
-            <p>create_at: {currentReviewSet.created_at}</p>
+            <EditableInput
+              styles={{ fontSize: '12px', color: '#777' }}
+              text={reviewSet.description}
+              updateText={(v) => {
+                setReviewSet({ ...reviewSet, description: v })
+              }}
+              saveText={async (v) => {
+                if (!v) return
+                setReviewSet({ ...reviewSet, description: v })
+                const resp = await ReviewSetAxios.put('', {
+                  id: reviewSet.id,
+                  description: v
+                })
+                console.log(resp)
+              }}
+            ></EditableInput>
+            <p>create_at: {reviewSet.created_at}</p>
           </>
         )}
       </header>
       <main className={layout_styles['review-asider-main']}>
         {reviewSetList.map((item) => (
           <div
+            key={item.id}
             className={layout_styles['review-set-card-container']}
             onClick={() => {
-              SetCurrentReviewSet(item)
+              setReviewSet(item)
             }}
           >
             <p>{item.name}</p>
             <button>add</button>
             <button
               onClick={async (e) => {
+                // 删除锁：如果现在选中了，不允许删除。
+                if (reviewSet?.id === item.id) {
+                  console.error('当前选中的，不允许删除')
+                  return
+                }
                 e.stopPropagation()
                 const resp = await ReviewSetAxios.delete(``, { params: { set_id: item.id } })
                 if (resp.status == 204) {
@@ -186,8 +259,9 @@ const ReviewAsider = () => {
 }
 
 const SummaryPage = () => {
+  // 总数据
   const [summaryData, setSummaryData] = useState<IReviewItem[]>()
-
+  const { reviewSet, setReviewSet } = useReviewSet()
   enum SummaryType {
     review_items = 0,
     reviews
@@ -208,20 +282,21 @@ const SummaryPage = () => {
       setReviewList(res.data.data)
     })()
   }, [currentReviewItemId])
+  // 后端获取所有item
   useEffect(() => {
     ;(async () => {
-      axios.get('http://localhost:3001/api/review-items').then((res) => {
-        console.log('获取 summery 信息')
-        const data = res.data['data'].map((item) => {
+      if (reviewSet) {
+        const resp = await ReviewSetAxios.get('/review-items', { params: { set_id: reviewSet.id } })
+        const data = resp.data['data'].map((item) => {
           return {
             ...item,
             content: JSON.parse(item.content)
           }
         })
         setSummaryData(data)
-      })
+      } else console.error('没有 review set，请选择')
     })()
-  }, [])
+  }, [reviewSet])
 
   const QA = ({ q, a }: { q: string; a: string }) => {
     return (
@@ -361,6 +436,7 @@ const ReviewPage = () => {
     Submitting, // 网络请求中
     Finish
   }
+  const { reviewSet, setReviewSet } = useReviewSet()
 
   const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
   const [currentReviewItem, setCurrentReviewItem] = useState<PageReviewItem>()
@@ -401,7 +477,14 @@ const ReviewPage = () => {
           return
         }
         hasFetchedRef.current = true
-        const getParams: { mode: GetReviewItemsMode } = { mode: 'today-review' }
+        if (!reviewSet) {
+          console.error('没有reviewSet，请选择')
+          return
+        }
+        const getParams: { mode: GetReviewItemsMode; review_set_id: number } = {
+          mode: 'today-review',
+          review_set_id: reviewSet.id
+        }
         const result = await ReviewItemAxios.get('', {
           params: getParams
         })
@@ -456,10 +539,10 @@ const ReviewPage = () => {
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
+    //window.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
+      //window.removeEventListener('keydown', handleKeyDown)
     }
   }, [])
   useEffect(() => {
@@ -474,7 +557,7 @@ const ReviewPage = () => {
         const idx = ReviewQueue.shift()!
         setCurrentReviewItemIdx(idx)
         const item = reviewItemList[idx]
-        console.log('新item', item, ReviewQueue)
+        // console.log('新item', item, ReviewQueue)
         setCurrentReviewItem(item)
         // currentReviewData.item_id = item.id
         setCurrentReviewData({ ...currentReviewData, item_id: item.id })
@@ -517,7 +600,7 @@ const ReviewPage = () => {
         let count = 0
         for (const i of ReviewQueue) if (i === currentReviewItemIdx) count++
 
-        while (count < 2) {
+        while (count < reviewSet?.setting['review_count']['trying']) {
           count++
           ReviewQueue.push(currentReviewItemIdx)
         }
@@ -535,7 +618,7 @@ const ReviewPage = () => {
       } else if (currentReviewDataRef.current.rate === ReviewRate.Icant) {
         let count = 0
         for (const i of ReviewQueue) if (i === currentReviewItemIdx) count++
-        while (count < 3) {
+        while (count < reviewSet?.setting['review_count']['Icant']) {
           count++
           ReviewQueue.push(currentReviewItemIdx)
         }
@@ -640,16 +723,14 @@ const ReviewPage = () => {
   )
 }
 
-const Setting = () => {
-  return <div className={`${layout_styles['fill-container']}`}></div>
-}
 const MainPages = ({ currentPage }: { currentPage: PageTags }) => {
+  const { reviewSet, setReviewSet } = useReviewSet()
   switch (currentPage) {
     case PageTags.Summary:
       return <SummaryPage></SummaryPage>
       break
     case PageTags.Review:
-      return <ReviewPage></ReviewPage>
+      return <ReviewPage key={reviewSet && reviewSet.id}></ReviewPage> // ReviewPage 强制刷新。
       break
       defaule: return <div>Default</div>
     case PageTags.Setting:
