@@ -2,7 +2,7 @@ import { Template } from '@renderer/components/Layout/Template'
 import layout_styles from './layout-styles.module.scss'
 import styles from './styles.module.scss'
 import Papa from 'papaparse'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import TextArea from 'antd/es/input/TextArea'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { Button, Empty, Tag, message } from 'antd'
@@ -14,14 +14,15 @@ import {
   Iqa,
   IReviewSet
 } from '../../../../../types/review/review'
-import { ReviewRate } from '../../../../../common/review/index'
+import { ReviewContentTypeEnum, ReviewRate } from '../../../../../common/review/index'
 import { ReviewAxios, ReviewItemAxios, ReviewSetAxios } from './api'
 import { shuffleArray } from '@renderer/utils'
 import { EditableInput } from '../../components/Editable/EditableInput/EditableInput'
 import { ReviewSetContext, useReviewSet } from './ctx'
 import React from 'react'
-import { set, sum } from 'lodash'
 import { DefaultSetting, Setting } from './Setting'
+import { CoverLayerState, CoverPageContainer } from '@renderer/components/CoverPageContainer'
+import { CoverWindow, EditContent } from './CoverFunctionPages/EditContent'
 
 enum PageTags {
   Review = 0,
@@ -60,9 +61,9 @@ const ReadCSV = (file: File, handleData: (datas: any[]) => Promise<void>) => {
 
 export const ReviewWithContext = () => {
   const [reviewSet, setReviewSet] = React.useState<IReviewSet | null>(null)
-
+  const [coverState, setCoverState] = useState(CoverLayerState.hidden)
   return (
-    <ReviewSetContext.Provider value={{ reviewSet, setReviewSet }}>
+    <ReviewSetContext.Provider value={{ reviewSet, setReviewSet, coverState, setCoverState }}>
       <Review></Review>
     </ReviewSetContext.Provider>
   )
@@ -73,6 +74,7 @@ export const Review = () => {
   const [currentPage, setCurrentPage] = useState<PageTags>(PageTags.Summary)
   const FileInputRef = useRef<HTMLInputElement>(null)
   const [showAside, setShowAsider] = useState(true)
+  const { coverState, setCoverState } = useReviewSet()
 
   // TODO 设置 set_id。 往后的所有步骤都随着 set_id 变更。
   return (
@@ -124,6 +126,30 @@ export const Review = () => {
       main={<MainPages currentPage={currentPage}></MainPages>}
       asider={showAside && <ReviewAsider></ReviewAsider>}
       footer={<footer className={layout_styles['review-footer']}></footer>}
+      //   TODO 数据全部改为 Context。在 Conetxt 里，所有的组件都响应式更新。
+      cover={
+        <CoverPageContainer
+          state={coverState}
+          children={
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <CoverWindow handleClose={() => setCoverState(CoverLayerState.hidden)}>
+                <EditContent
+                  type={ReviewContentTypeEnum.qa}
+                  content={{ q: 'q', a: 'a' }}
+                ></EditContent>
+              </CoverWindow>
+            </div>
+          }
+        />
+      }
     />
   )
 }
@@ -162,7 +188,8 @@ const ReviewAsider = () => {
       >
         <p>{item.name}</p>
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
             if (FileInputRef.current) FileInputRef.current.click()
           }}
         >
@@ -195,8 +222,8 @@ const ReviewAsider = () => {
                       })
                       console.log(resp1)
                     }
-                  } catch (e) {
-                    // 如果hi conflict 错误，跳过
+                  } catch (error) {
+                    const e = error as any
                     console.log(e.response.data.message)
                   }
                 }
@@ -346,9 +373,17 @@ const SummaryPage = () => {
   }
   // 根据 type 分发 content 组件
   const ContentTD = ({ id, type, content }: { id: number; type: number; content: Iqa }) => {
+    const { setCoverState } = useReviewSet()
     return (
       <td className={` ${layout_styles['summary-table-content-td']}`}>
-        <button className={layout_styles['summary-table-edit-button']}>edit</button>
+        <button
+          onClick={() => {
+            setCoverState(CoverLayerState.visible)
+          }}
+          className={layout_styles['summary-table-edit-button']}
+        >
+          edit
+        </button>
         <QA q={content.q} a={content.a}></QA>
       </td>
     )

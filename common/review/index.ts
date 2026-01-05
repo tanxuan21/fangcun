@@ -4,3 +4,7 @@ export enum ReviewRate {
   Ican = 2,
   UnSelect = 3
 }
+
+export enum ReviewContentTypeEnum {
+  qa = 0
+}

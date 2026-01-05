@@ -1,0 +1,19 @@
+.cover-window {
+  width: 80%;
+  height: 80%;
+  background: #fff;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.356);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+
+  .cover-window-header {
+    flex-shrink: 0;
+    height: 30px;
+  }
+
+  .cover-window-main {
+    flex: 1;
+    padding: 10px 40px;
+  }
+}
