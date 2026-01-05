@@ -5,7 +5,7 @@ import Papa from 'papaparse'
 import axios from 'axios'
 import TextArea from 'antd/es/input/TextArea'
 import { useContext, useEffect, useRef, useState } from 'react'
-import { Button, Empty, Tag } from 'antd'
+import { Button, Empty, Tag, message } from 'antd'
 import { getRelativeTime, GetTodayTimeBegin2End } from '@renderer/utils/time'
 import {
   GetReviewItemsMode,
@@ -50,15 +50,6 @@ const ReadCSV = (file: File, handleData: (datas: any[]) => Promise<void>) => {
         }
       })
       handleData(parse_result.data)
-      //   for (const item of parse_result.data) {
-      //     const data = {
-      //       type: 0,
-      //       content: JSON.stringify({ q: item.q, a: item.a }, null, 2)
-      //     }
-
-      //     const resp = await axios.post('http://localhost:3001/api/review-items', data)
-      //     console.log(resp)
-      //   }
     }
   }
   reader.onerror = (e) => {
@@ -104,7 +95,6 @@ export const Review = () => {
                         type: 0,
                         content: JSON.stringify({ q: item.q, a: item.a }, null, 2)
                       }
-
                       const resp = await axios.post('http://localhost:3001/api/review-items', data)
                       console.log(resp)
                     }
@@ -161,8 +151,85 @@ const ReviewAsider = () => {
     })()
   }, [])
 
+  const ReviewSetEntryItem = ({ item }: { item: IReviewSet }) => {
+    const FileInputRef = useRef<HTMLInputElement>(null)
+    return (
+      <div
+        className={layout_styles['review-set-card-container']}
+        onClick={() => {
+          setReviewSet(item)
+        }}
+      >
+        <p>{item.name}</p>
+        <button
+          onClick={() => {
+            if (FileInputRef.current) FileInputRef.current.click()
+          }}
+        >
+          add
+        </button>
+        <input
+          ref={FileInputRef}
+          style={{ display: 'none' }}
+          type="file"
+          accept=".txt,.csv,.json,.html,.js,.css,.xml"
+          onChange={async (e) => {
+            if (e.target.files) {
+              //   setFiles(Array.from(e.target.files))
+              const file = e.target.files[0]
+              if (!file) return
+              ReadCSV(file, async (datas) => {
+                for (const csv_item of datas) {
+                  const data = {
+                    type: 0,
+                    content: JSON.stringify({ q: csv_item.q, a: csv_item.a }, null, 2)
+                  }
+                  try {
+                    const resp = await ReviewItemAxios.post('', data)
+                    console.log(resp) // 如果报错 conflict 就不会添加到 set
+                    if (resp.status == 200) {
+                      // 怎么判断请求成功？
+                      const resp1 = await ReviewSetAxios.post('/add-review-item', {
+                        review_set_id: item.id,
+                        review_item_id: resp.data.data.id // 返回一个id
+                      })
+                      console.log(resp1)
+                    }
+                  } catch (e) {
+                    // 如果hi conflict 错误，跳过
+                    console.log(e.response.data.message)
+                  }
+                }
+              })
+              // 重置。
+              e.target.value = ''
+            }
+          }}
+        />
+        <button
+          onClick={async (e) => {
+            // 删除锁：如果现在选中了，不允许删除。
+            if (reviewSet?.id === item.id) {
+              console.error('当前选中的，不允许删除')
+              return
+            }
+            e.stopPropagation()
+            const resp = await ReviewSetAxios.delete(``, { params: { set_id: item.id } })
+            if (resp.status == 204) {
+              setReviewSetList((prev) => [...reviewSetList.filter((item2) => item2.id !== item.id)])
+            } else {
+              console.log(resp)
+            }
+          }}
+        >
+          del
+        </button>
+      </div>
+    )
+  }
   return (
     <aside className={layout_styles['review-asider']}>
+      {/* header 显示当前的 set */}
       <header className={layout_styles['review-asider-header']}>
         {reviewSet && (
           <>
@@ -205,36 +272,7 @@ const ReviewAsider = () => {
       </header>
       <main className={layout_styles['review-asider-main']}>
         {reviewSetList.map((item) => (
-          <div
-            key={item.id}
-            className={layout_styles['review-set-card-container']}
-            onClick={() => {
-              setReviewSet(item)
-            }}
-          >
-            <p>{item.name}</p>
-            <button>add</button>
-            <button
-              onClick={async (e) => {
-                // 删除锁：如果现在选中了，不允许删除。
-                if (reviewSet?.id === item.id) {
-                  console.error('当前选中的，不允许删除')
-                  return
-                }
-                e.stopPropagation()
-                const resp = await ReviewSetAxios.delete(``, { params: { set_id: item.id } })
-                if (resp.status == 204) {
-                  setReviewSetList((prev) => [
-                    ...reviewSetList.filter((item2) => item2.id !== item.id)
-                  ])
-                } else {
-                  console.log(resp)
-                }
-              }}
-            >
-              del
-            </button>
-          </div>
+          <ReviewSetEntryItem item={item} key={item.id} />
         ))}
       </main>
       <footer className={layout_styles['review-asider-footer']}>
@@ -342,6 +380,16 @@ const SummaryPage = () => {
     >
       <header className={layout_styles['controller-header']}>
         <button onClick={() => setCurrentSummaryType(SummaryType.review_items)}>back</button>
+        <button
+          onClick={async () => {
+            if (summaryData)
+              for (const item of summaryData) {
+                await ReviewItemAxios.delete('', { params: { id: item.id } })
+              }
+          }}
+        >
+          del all
+        </button>
       </header>
       {summaryData && (
         <>

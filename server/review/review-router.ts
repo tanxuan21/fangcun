@@ -41,9 +41,9 @@ router.post(
   '/review-items',
   POST(async (req, res: ExtendResponse) => {
     const result = ReviewDataBaseInstance.add_review_item(req.body.type, req.body.content)
-    // if (!result.success) {
-    //   throw AppError.conflict(`${result.id} already exists`)
-    // }
+    if (!result.success) {
+      throw AppError.conflict(`${result.id} already exists`)
+    }
     if (!result.success) res.apiSuccess(`id: ${result.id} already exists`)
     else res.apiSuccess({ id: result.id })
   })
@@ -58,14 +58,14 @@ router.put('/review-items', (req, res) => {
   }
 })
 
-router.delete('/review-items', (req, res) => {
-  try {
-    const result = ReviewDataBaseInstance.delete_review_item(req.body.id)
-    makeSuccessRep(res, result)
-  } catch (e) {
-    res.status(500).send(e.message)
-  }
-})
+router.delete(
+  '/review-items',
+  DELETE(async (req, res) => {
+    const id = req.query['id']
+    if (!id || typeof id !== 'string') throw AppError.badRequest('id is required')
+    return ReviewDataBaseInstance.delete_review_item(parseInt(id))
+  })
+)
 
 router.post(
   '/review-items/arrange',

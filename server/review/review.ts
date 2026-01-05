@@ -134,7 +134,7 @@ class ReviewDatabase {
         DELETE FROM review_items WHERE id = ?;
         `
     )
-    stmt.run(id)
+    return stmt.run(id)
   }
   update_review_item(id: number, updates: { type: number; content: string }) {
     const stmt = this.db.prepare(
