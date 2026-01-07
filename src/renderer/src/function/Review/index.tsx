@@ -24,8 +24,9 @@ import { DefaultSetting, Setting } from './Setting'
 import { CoverLayerState, CoverPageContainer } from '@renderer/components/CoverPageContainer'
 import { CoverWindow, EditContent } from './CoverFunctionPages/EditContent'
 import { ReviewCoverFunctionPage } from './CoverFunctionPages/ReviewCoverFunctionPage'
-import { PageReviewItem } from './types'
+import { CoverFunctionType, PageReviewItem } from './types'
 import { set } from 'lodash'
+import { SummaryPage } from './SummaryPage'
 
 enum PageTags {
   Review = 0,
@@ -66,6 +67,8 @@ export const ReviewWithContext = () => {
   const [reviewSet, setReviewSet] = useState<IReviewSet | null>(null)
   const [coverState, setCoverState] = useState(CoverLayerState.hidden)
   const [ReviewItems, setReviewItems] = useState<PageReviewItem[]>([])
+  const [OperReviewItem, setOperReviewItem] = useState<IReviewItem | null>(null)
+  const [OperType, setOperType] = useState<CoverFunctionType>('edit')
   useEffect(() => {
     ;(async () => {
       if (reviewSet && reviewSet.id !== -1) {
@@ -94,7 +97,11 @@ export const ReviewWithContext = () => {
         coverState,
         setCoverState,
         setReviewItems,
-        ReviewItems
+        ReviewItems,
+        setOperReviewItem,
+        setOperType,
+        OperReviewItem,
+        OperType
       }}
     >
       <Review></Review>
@@ -331,175 +338,6 @@ const ReviewAsider = () => {
         </button>
       </footer>
     </aside>
-  )
-}
-
-const SummaryPage = () => {
-  // 总数据
-  //   const [summaryData, setSummaryData] = useState<IReviewItem[]>()
-  const { ReviewItems, setReviewSet, reviewSet } = useReviewSet()
-  enum SummaryType {
-    // 切换检视类型
-    review_items = 0,
-    reviews
-  }
-
-  const [currentSummaryType, setCurrentSummaryType] = useState(SummaryType.review_items)
-
-  // 进入这个 page 就要重新获取 ReviewItems。
-  useEffect(() => {
-    if (reviewSet) setReviewSet({ ...reviewSet })
-  }, [])
-
-  // 复习数据
-  const [currentReviewItemId, setCurrentReviewItemId] = useState<number>(0)
-  const [reviewsList, setReviewList] = useState<IReview[]>([])
-  useEffect(() => {
-    ;(async () => {
-      const res = await ReviewAxios.get('', {
-        params: {
-          item_id: currentReviewItemId
-        }
-      })
-      setReviewList(res.data.data)
-    })()
-  }, [currentReviewItemId])
-
-  const QA = ({ q, a }: { q: string; a: string }) => {
-    return (
-      <div className={layout_styles['summary-table-qatd']}>
-        <div className={layout_styles['summary-table-q']}>{q}</div>
-        <div className={layout_styles['summary-table-a']}>{a}</div>
-      </div>
-    )
-  }
-  // 根据 type 分发 content 组件
-  const ContentTD = ({ id, type, content }: { id: number; type: number; content: Iqa }) => {
-    const { setCoverState } = useReviewSet()
-    return (
-      <td className={` ${layout_styles['summary-table-content-td']}`}>
-        <button
-          onClick={() => {
-            setCoverState(CoverLayerState.visible)
-          }}
-          className={layout_styles['summary-table-edit-button']}
-        >
-          edit
-        </button>
-        <QA q={content.q} a={content.a}></QA>
-      </td>
-    )
-  }
-
-  // state 组件
-  const StateTag = ({ item }: { item: IReviewItem }) => {
-    // 新添加的，未更新
-    // 今天需要复习 next_review_at <= today
-    // 今天复习完 last_reviewed_at === today
-    // 今天不必复习 next_review_at > today && last_reviewed_at < today
-    const nextDiff = getRelativeTime(item.next_review_at)
-    const lastDiff = getRelativeTime(item.last_reviewed_at)
-    if (lastDiff === 0) return <Tag color="green">finish</Tag>
-    if (nextDiff <= 0) return <Tag color="orange">today</Tag>
-    if (lastDiff < 0) return <Tag color="blue">future</Tag>
-    return <Tag color="red">unsave</Tag>
-  }
-
-  const getRelativeTimeString = (timeString: string) => {
-    const relativeTime = getRelativeTime(timeString)
-    if (relativeTime === 0) return '今天'
-    else if (relativeTime > 0) return `${relativeTime}天后`
-    else return `${Math.abs(relativeTime)}天前`
-  }
-  return (
-    <div
-      className={`${layout_styles['summary-table-container']} ${layout_styles['fill-container']}`}
-    >
-      <header className={layout_styles['controller-header']}>
-        <button onClick={() => setCurrentSummaryType(SummaryType.review_items)}>back</button>
-        <button
-          onClick={async () => {
-            if (ReviewItems)
-              for (const item of ReviewItems) {
-                await ReviewItemAxios.delete('', { params: { id: item.id } })
-              }
-          }}
-        >
-          del all
-        </button>
-      </header>
-      {ReviewItems && (
-        <>
-          {currentSummaryType === SummaryType.review_items ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>state</th>
-                  <th>Content</th>
-                  <th>created_at</th>
-                  <th>last_reviewed</th>
-                  <th>next_review</th>
-                  <th>level</th>
-                  <th>arrange_at</th>
-                  <th>Oper</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ReviewItems?.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <StateTag item={item}></StateTag>
-                    </td>
-
-                    <ContentTD id={item.id} type={item.type} content={item.content}></ContentTD>
-
-                    <td>{item.created_at}</td>
-                    <td>{getRelativeTimeString(item.last_reviewed_at)}</td>
-                    <td>{getRelativeTimeString(item.next_review_at)}</td>
-                    <td>{item.level}</td>
-                    <td>{getRelativeTimeString(item.arrange_review_at)}</td>
-                    <td>
-                      <div className={layout_styles['operation-container']}>
-                        <button>del</button>
-                        <button
-                          onClick={() => {
-                            setCurrentReviewItemId(item.id)
-                            setCurrentSummaryType(SummaryType.reviews)
-                          }}
-                        >
-                          review
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <>
-              <table>
-                <thead>
-                  <tr>
-                    <th>create_at</th>
-                    <th>rate</th>
-                    <th>remark</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reviewsList.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.created_at}</td>
-                      <td>{item.rate}</td>
-                      <td>{item.remark}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
-        </>
-      )}
-    </div>
   )
 }
 

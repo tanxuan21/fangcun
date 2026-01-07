@@ -2,9 +2,26 @@ import { CoverLayerState, CoverPageContainer } from '@renderer/components/CoverP
 import { useReviewSet } from '../ctx'
 import { CoverWindow, EditContent } from './EditContent'
 import { ReviewContentTypeEnum } from '../../../../../../common/review'
+import { CoverFunctionType } from '../types'
+import { AddContent } from './AddContent'
+import { DeleteAlter } from './DeleteAlert'
 
 export const ReviewCoverFunctionPage = () => {
-  const { coverState, setCoverState } = useReviewSet()
+  const { coverState, setCoverState, OperType } = useReviewSet()
+
+  const handleCallback = () => {
+    switch (OperType) {
+      case 'add':
+        return <AddContent></AddContent>
+      case 'edit':
+        return <EditContent></EditContent>
+      case 'delete':
+        return <DeleteAlter></DeleteAlter>
+      default:
+        return <></>
+    }
+  }
+
   return (
     <CoverPageContainer
       state={coverState}
@@ -19,7 +36,7 @@ export const ReviewCoverFunctionPage = () => {
           }}
         >
           <CoverWindow handleClose={() => setCoverState(CoverLayerState.hidden)}>
-            <EditContent type={ReviewContentTypeEnum.qa} content={{ q: 'q', a: 'a' }}></EditContent>
+            {handleCallback()}
           </CoverWindow>
         </div>
       }

@@ -3,6 +3,7 @@ import { IReviewItem, IReviewSet } from '../../../../../types/review/review'
 import React from 'react'
 import { CoverLayerState } from '@renderer/components/CoverPageContainer'
 import { set } from 'lodash'
+import { CoverFunctionType } from './types'
 
 // 定义 Context 类型
 interface ReviewSetContextType {
@@ -10,6 +11,11 @@ interface ReviewSetContextType {
   setReviewSet: (reviewSet: IReviewSet) => void
   coverState: CoverLayerState // 用于 CoverPage的显藏
   setCoverState: (state: CoverLayerState) => void
+  // CoverPage 临时参数
+  OperReviewItem: IReviewItem | null
+  setOperReviewItem: (item: IReviewItem | null) => void
+  OperType: CoverFunctionType
+  setOperType: (type: CoverFunctionType) => void
   // 这本书的数据
   ReviewItems: IReviewItem[]
   setReviewItems: (items: IReviewItem[]) => void

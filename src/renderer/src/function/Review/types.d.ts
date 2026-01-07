@@ -3,3 +3,5 @@ export type PageReviewItem = IReviewItem & {
   total_count: number // 用户今天还需要复习几次？根据 worseSelect 更新
   worseSelect: number // 今天用户最差的选择，按钮/键盘 更新
 }
+
+export type CoverFunctionType = 'add' | 'edit' | 'delete'
