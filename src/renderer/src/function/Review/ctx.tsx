@@ -1,33 +1,22 @@
 import { createContext, ReactNode, useContext } from 'react'
-import { IReviewSet } from '../../../../../types/review/review'
+import { IReviewItem, IReviewSet } from '../../../../../types/review/review'
 import React from 'react'
 import { CoverLayerState } from '@renderer/components/CoverPageContainer'
+import { set } from 'lodash'
 
 // 定义 Context 类型
 interface ReviewSetContextType {
   reviewSet: IReviewSet | null
   setReviewSet: (reviewSet: IReviewSet) => void
-  coverState: CoverLayerState
+  coverState: CoverLayerState // 用于 CoverPage的显藏
   setCoverState: (state: CoverLayerState) => void
+  // 这本书的数据
+  ReviewItems: IReviewItem[]
+  setReviewItems: (items: IReviewItem[]) => void
 }
 
 // 创建 Context，确保类型正确
 export const ReviewSetContext = createContext<ReviewSetContextType | undefined>(undefined)
-
-// Provider 组件
-interface ReviewSetProviderProps {
-  children: ReactNode
-}
-
-// export const ReviewSetProvider: React.FC<ReviewSetProviderProps> = ({ children }) => {
-//   const [reviewSet, setReviewSet] = React.useState<IReviewSet | null>(null)
-
-//   return (
-//     <ReviewSetContext.Provider value={{ reviewSet, setReviewSet }}>
-//       {children}
-//     </ReviewSetContext.Provider>
-//   )
-// }
 
 // 自定义 Hook - 修复版本
 export const useReviewSet = () => {

@@ -23,6 +23,9 @@ import React from 'react'
 import { DefaultSetting, Setting } from './Setting'
 import { CoverLayerState, CoverPageContainer } from '@renderer/components/CoverPageContainer'
 import { CoverWindow, EditContent } from './CoverFunctionPages/EditContent'
+import { ReviewCoverFunctionPage } from './CoverFunctionPages/ReviewCoverFunctionPage'
+import { PageReviewItem } from './types'
+import { set } from 'lodash'
 
 enum PageTags {
   Review = 0,
@@ -60,10 +63,36 @@ const ReadCSV = (file: File, handleData: (datas: any[]) => Promise<void>) => {
 }
 
 export const ReviewWithContext = () => {
-  const [reviewSet, setReviewSet] = React.useState<IReviewSet | null>(null)
+  const [reviewSet, setReviewSet] = useState<IReviewSet | null>(null)
   const [coverState, setCoverState] = useState(CoverLayerState.hidden)
+  const [ReviewItems, setReviewItems] = useState<PageReviewItem[]>([])
+  useEffect(() => {
+    ;(async () => {
+      if (reviewSet && reviewSet.id !== -1) {
+        // TODO 自动获取 review_items 方便后续引用
+        // 粘贴自 Summary 组件，这个数据比较完整
+        const resp = await ReviewSetAxios.get('/review-items', { params: { set_id: reviewSet.id } })
+        const data = resp.data['data'].map((item) => {
+          return {
+            ...item,
+            content: JSON.parse(item.content)
+          }
+        })
+        setReviewItems(data)
+      }
+    })()
+  }, [reviewSet])
   return (
-    <ReviewSetContext.Provider value={{ reviewSet, setReviewSet, coverState, setCoverState }}>
+    <ReviewSetContext.Provider
+      value={{
+        reviewSet,
+        setReviewSet,
+        coverState,
+        setCoverState,
+        setReviewItems,
+        ReviewItems
+      }}
+    >
       <Review></Review>
     </ReviewSetContext.Provider>
   )
@@ -127,29 +156,7 @@ export const Review = () => {
       asider={showAside && <ReviewAsider></ReviewAsider>}
       footer={<footer className={layout_styles['review-footer']}></footer>}
       //   TODO 数据全部改为 Context。在 Conetxt 里，所有的组件都响应式更新。
-      cover={
-        <CoverPageContainer
-          state={coverState}
-          children={
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
-            >
-              <CoverWindow handleClose={() => setCoverState(CoverLayerState.hidden)}>
-                <EditContent
-                  type={ReviewContentTypeEnum.qa}
-                  content={{ q: 'q', a: 'a' }}
-                ></EditContent>
-              </CoverWindow>
-            </div>
-          }
-        />
-      }
+      cover={<ReviewCoverFunctionPage></ReviewCoverFunctionPage>}
     />
   )
 }
@@ -183,7 +190,7 @@ const ReviewAsider = () => {
       <div
         className={layout_styles['review-set-card-container']}
         onClick={() => {
-          setReviewSet(item)
+          setReviewSet(item) // Ctx 设置 set
         }}
       >
         <p>{item.name}</p>
@@ -325,9 +332,10 @@ const ReviewAsider = () => {
 
 const SummaryPage = () => {
   // 总数据
-  const [summaryData, setSummaryData] = useState<IReviewItem[]>()
-  const { reviewSet, setReviewSet } = useReviewSet()
+  //   const [summaryData, setSummaryData] = useState<IReviewItem[]>()
+  const { ReviewItems } = useReviewSet()
   enum SummaryType {
+    // 切换检视类型
     review_items = 0,
     reviews
   }
@@ -347,21 +355,6 @@ const SummaryPage = () => {
       setReviewList(res.data.data)
     })()
   }, [currentReviewItemId])
-  // 后端获取所有item
-  useEffect(() => {
-    ;(async () => {
-      if (reviewSet) {
-        const resp = await ReviewSetAxios.get('/review-items', { params: { set_id: reviewSet.id } })
-        const data = resp.data['data'].map((item) => {
-          return {
-            ...item,
-            content: JSON.parse(item.content)
-          }
-        })
-        setSummaryData(data)
-      } else console.error('没有 review set，请选择')
-    })()
-  }, [reviewSet])
 
   const QA = ({ q, a }: { q: string; a: string }) => {
     return (
@@ -417,8 +410,8 @@ const SummaryPage = () => {
         <button onClick={() => setCurrentSummaryType(SummaryType.review_items)}>back</button>
         <button
           onClick={async () => {
-            if (summaryData)
-              for (const item of summaryData) {
+            if (ReviewItems)
+              for (const item of ReviewItems) {
                 await ReviewItemAxios.delete('', { params: { id: item.id } })
               }
           }}
@@ -426,7 +419,7 @@ const SummaryPage = () => {
           del all
         </button>
       </header>
-      {summaryData && (
+      {ReviewItems && (
         <>
           {currentSummaryType === SummaryType.review_items ? (
             <table>
@@ -443,7 +436,7 @@ const SummaryPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {summaryData?.map((item) => (
+                {ReviewItems?.map((item) => (
                   <tr key={item.id}>
                     <td>
                       <StateTag item={item}></StateTag>
@@ -499,12 +492,6 @@ const SummaryPage = () => {
       )}
     </div>
   )
-}
-
-type PageReviewItem = IReviewItem & {
-  remains: number // 还剩几次今天的复习结束？结束时 remains 减到 0  时 更新 next_review_at last_reviewed_at
-  total_count: number // 用户今天还需要复习几次？根据 worseSelect 更新
-  worseSelect: number // 今天用户最差的选择，按钮/键盘 更新
 }
 
 const ReviewPage = () => {
