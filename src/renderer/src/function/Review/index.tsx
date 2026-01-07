@@ -337,7 +337,7 @@ const ReviewAsider = () => {
 const SummaryPage = () => {
   // 总数据
   //   const [summaryData, setSummaryData] = useState<IReviewItem[]>()
-  const { ReviewItems } = useReviewSet()
+  const { ReviewItems, setReviewSet, reviewSet } = useReviewSet()
   enum SummaryType {
     // 切换检视类型
     review_items = 0,
@@ -345,6 +345,11 @@ const SummaryPage = () => {
   }
 
   const [currentSummaryType, setCurrentSummaryType] = useState(SummaryType.review_items)
+
+  // 进入这个 page 就要重新获取 ReviewItems。
+  useEffect(() => {
+    if (reviewSet) setReviewSet({ ...reviewSet })
+  }, [])
 
   // 复习数据
   const [currentReviewItemId, setCurrentReviewItemId] = useState<number>(0)
@@ -544,38 +549,6 @@ const ReviewPage = () => {
   useEffect(() => {
     ;(async () => {
       try {
-        // 这里是拦不住的。因为useEffect调用两次，两次调用之间不会有阻塞。所以
-        // 两次调用都会看到空的 reviewItemQueue，并且请求数据
-        // if (hasFetchedRef.current) {
-        //   console.warn('已经获取数据，请勿重复获取')
-        //   return
-        // }
-        // hasFetchedRef.current = true
-        // if (!reviewSet) {
-        //   console.error('没有reviewSet，请选择')
-        //   return
-        // }
-        // const getParams: { mode: GetReviewItemsMode; review_set_id: number } = {
-        //   mode: 'today-review',
-        //   review_set_id: reviewSet.id
-        // }
-        // const result = await ReviewItemAxios.get('', {
-        //   params: getParams
-        // })
-        // const result_data = [
-        //   ...result.data.data.map((item) => ({
-        //     ...item,
-        //     worseSelect: ReviewRate.Ican,
-        //     total_count: 1,
-        //     remains: 1,
-        //     content: JSON.parse(item.content) // 解析 content
-        //   }))
-        // ].filter((item) => {
-        //   // 过滤掉不必复习的。也就是今天已经复习过的
-        //   const { begin, end } = GetTodayTimeBegin2End()
-        //   const condition = item.last_reviewed_at >= begin && item.last_reviewed_at <= end
-        //   return !condition
-        // })
         const result_data = ReviewItems.filter((item) => {
           // 过滤掉不必复习的。也就是今天已经复习过的
           const { begin, end } = GetTodayTimeBegin2End()
