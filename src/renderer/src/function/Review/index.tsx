@@ -75,6 +75,10 @@ export const ReviewWithContext = () => {
         const data = resp.data['data'].map((item) => {
           return {
             ...item,
+            // 兼容 ReviewPage 所需要的字段
+            worseSelect: ReviewRate.Ican,
+            total_count: 1,
+            remains: 1,
             content: JSON.parse(item.content)
           }
         })
@@ -506,7 +510,7 @@ const ReviewPage = () => {
     Submitting, // 网络请求中
     Finish
   }
-  const { reviewSet, setReviewSet } = useReviewSet()
+  const { reviewSet, setReviewSet, ReviewItems } = useReviewSet()
 
   const [currentStage, setCurrentStage] = useState(ReviewStages.Disable)
   const [currentReviewItem, setCurrentReviewItem] = useState<PageReviewItem>()
@@ -542,31 +546,37 @@ const ReviewPage = () => {
       try {
         // 这里是拦不住的。因为useEffect调用两次，两次调用之间不会有阻塞。所以
         // 两次调用都会看到空的 reviewItemQueue，并且请求数据
-        if (hasFetchedRef.current) {
-          console.warn('已经获取数据，请勿重复获取')
-          return
-        }
-        hasFetchedRef.current = true
-        if (!reviewSet) {
-          console.error('没有reviewSet，请选择')
-          return
-        }
-        const getParams: { mode: GetReviewItemsMode; review_set_id: number } = {
-          mode: 'today-review',
-          review_set_id: reviewSet.id
-        }
-        const result = await ReviewItemAxios.get('', {
-          params: getParams
-        })
-        const result_data = [
-          ...result.data.data.map((item) => ({
-            ...item,
-            worseSelect: ReviewRate.Ican,
-            total_count: 1,
-            remains: 1,
-            content: JSON.parse(item.content) // 解析 content
-          }))
-        ].filter((item) => {
+        // if (hasFetchedRef.current) {
+        //   console.warn('已经获取数据，请勿重复获取')
+        //   return
+        // }
+        // hasFetchedRef.current = true
+        // if (!reviewSet) {
+        //   console.error('没有reviewSet，请选择')
+        //   return
+        // }
+        // const getParams: { mode: GetReviewItemsMode; review_set_id: number } = {
+        //   mode: 'today-review',
+        //   review_set_id: reviewSet.id
+        // }
+        // const result = await ReviewItemAxios.get('', {
+        //   params: getParams
+        // })
+        // const result_data = [
+        //   ...result.data.data.map((item) => ({
+        //     ...item,
+        //     worseSelect: ReviewRate.Ican,
+        //     total_count: 1,
+        //     remains: 1,
+        //     content: JSON.parse(item.content) // 解析 content
+        //   }))
+        // ].filter((item) => {
+        //   // 过滤掉不必复习的。也就是今天已经复习过的
+        //   const { begin, end } = GetTodayTimeBegin2End()
+        //   const condition = item.last_reviewed_at >= begin && item.last_reviewed_at <= end
+        //   return !condition
+        // })
+        const result_data = ReviewItems.filter((item) => {
           // 过滤掉不必复习的。也就是今天已经复习过的
           const { begin, end } = GetTodayTimeBegin2End()
           const condition = item.last_reviewed_at >= begin && item.last_reviewed_at <= end
