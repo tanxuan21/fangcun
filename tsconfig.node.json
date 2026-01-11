@@ -3,18 +3,27 @@
     "include": [
         "electron.vite.config.*",
         "src/main/**/*",
-        "src/preload/**/*"
+        "src/preload/**/*",
+        "types/**/*"
     ],
     "compilerOptions": {
         "composite": true,
+        /* 覆盖继承配置（关键） */
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        /* 放宽规则（你已有） */
         "noUnusedLocals": false,
         "noUnusedParameters": false,
+        /* 正确的类型声明 */
         "types": [
-            "electron-vite/node"
+            "node",
+            "electron"
         ],
-        "typeRoots": [
-            "./node_modules/@types",
-            "./types" // 将自定义的 type 根目录加入到 tsconfig.json 的 typeRoots 中
-        ],
+        /* 自定义类型 */
+        // "typeRoots": [
+        //     "./node_modules/@types",
+        //     "./node_modules/electron",
+        //     "./types"
+        // ]
     }
 }

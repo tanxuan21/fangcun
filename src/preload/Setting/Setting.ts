@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { SettingAPI } from '../../../type/API/setting'
+import { SettingAPI } from '../../../types/API/setting'
 
 export const SettingExpose: () => SettingAPI = () => {
   return {

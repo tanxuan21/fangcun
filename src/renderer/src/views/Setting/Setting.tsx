@@ -1,7 +1,7 @@
 import { Button, Input } from 'antd'
 import styles from './setting-styles.module.scss'
 import { useEffect, useState } from 'react'
-import { SettingInterface } from 'type/API/setting'
+import { SettingInterface } from '../../../../../types/API/setting'
 interface props {
   HideSettingPage: () => void
 }

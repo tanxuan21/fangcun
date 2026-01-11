@@ -11,16 +11,16 @@
         "moduleResolution": "bundler",
         "composite": true,
         "jsx": "react-jsx",
-        "typeRoots": [
-            "./node_modules/@types",
-            "./types" // 将自定义的 type 根目录加入到 tsconfig.json 的 typeRoots 中
-        ],
+        // "typeRoots": [
+        //     "./node_modules/@types",
+        //     "./types" // 将自定义的 type 根目录加入到 tsconfig.json 的 typeRoots 中
+        // ],
         "rootDir": ".", // 抛弃 baseUrl 配置
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "paths": {
             "@renderer/*": [
-                "src/renderer/src/*"
+                "./src/renderer/src/*"
             ]
         }
     }

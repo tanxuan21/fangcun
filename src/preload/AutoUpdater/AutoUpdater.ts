@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { AutoUpdaterAPI } from '../../../type/API/AutoUpdater'
+import { AutoUpdaterAPI } from '../../../types/API/AutoUpdater'
 
 export const AutoUpdaterExpose: () => AutoUpdaterAPI = () => {
   return {

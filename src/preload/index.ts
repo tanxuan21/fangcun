@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { API } from '../../type/API'
+import { API } from '../../types/API'
 import { SettingExpose } from './Setting/Setting'
 import { AutoUpdaterExpose } from './AutoUpdater/AutoUpdater'
 import { general_preload_expose } from './general'

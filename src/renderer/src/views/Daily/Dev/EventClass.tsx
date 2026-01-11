@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { EventClass, EventClassType } from 'type/daily'
+import { EventClass, EventClassType } from '../../../../../../types/daily'
 import { EventClassAPI } from '../api/event-class'
 import { EditableInput } from '../../../components/Editable/EditableInput/EditableInput'
 import { Dropdown } from 'antd'

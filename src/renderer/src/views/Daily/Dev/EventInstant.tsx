@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { EventClass, EventClassType, EventInstant } from 'type/daily'
+import { EventClass, EventClassType, EventInstant } from '../../../../../../types/daily'
 import { EventInstantAPI } from '../api/event-instant'
 import dayjs from 'dayjs'
 import ListItemContainerStyles from './styles/ListItemContainer.module.scss'

@@ -1,4 +1,4 @@
-import { EventInstant } from 'type/daily'
+import { EventInstant } from '../../../../../../types/daily'
 import styles from './DayView.module.scss'
 import { EventInstantCom } from '../EventInstant/EventInstant'
 interface props {

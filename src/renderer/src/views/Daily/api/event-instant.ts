@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { EventInstant } from 'type/daily'
+import { EventInstant } from '../../../../../../types/daily'
 
 const http = axios.create({
   baseURL: `${await window.api.getItem('API_URL')}/api/daily`,
