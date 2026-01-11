@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { SettingInterface } from '../../../type/API/setting'
+import { SettingInterface } from '../../../types/API/setting'
 import fs from 'fs/promises'
 import path from 'path'
 import { GetMainWindow } from '../MainWindow'
@@ -70,7 +70,7 @@ class Setting {
 
   async save() {
     try {
-      await fs.writeFile(this.filePath, JSON.stringify(this.setting, null, 2))
+      await fs.writeFile(this.filePath, JSON.stringify(this.setting))
     } catch (e) {
       console.error('保存配置失败，恢复默认', e)
       this.setting = DefaultSetting

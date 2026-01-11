@@ -1,0 +1,56 @@
+.review-asider {
+  width: 200px;
+  background: #e4e4e471;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  color: #444;
+
+  .review-asider-header {
+    height: 300px;
+    width: 100%;
+    flex-shrink: 0;
+    padding: 15px;
+    border-bottom: 1px solid #00000033;
+  }
+
+  .review-asider-main {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 20px 10px;
+
+    // 卡片条目
+    & .review-set-entry-container {
+      padding: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 7px;
+      padding: 0 10px;
+
+      &:hover {
+        background: #fff;
+      }
+
+      & .qita-icon {
+        padding: 3px;
+        border-radius: 3px;
+
+        &:hover {
+          background: #0000001a;
+
+        }
+      }
+    }
+
+  }
+
+  .review-asider-footer {
+    width: 100%;
+    display: flex;
+    padding: 10px;
+    flex-direction: row-reverse;
+  }
+}

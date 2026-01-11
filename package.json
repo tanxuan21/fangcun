@@ -25,6 +25,7 @@
     "icon": "ts-node utils/update-iconfont.ts"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@lordicon/element": "^2.0.1",

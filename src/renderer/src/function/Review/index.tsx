@@ -28,40 +28,13 @@ import { ReviewCoverFunctionPage } from './CoverFunctionPages/ReviewCoverFunctio
 import { CoverFunctionType, PageReviewItem } from './types'
 import { set } from 'lodash'
 import { SummaryPage } from './SummaryPage'
+import { ReadCSV } from './utils/csv'
+import { ReviewAsider } from './Asider/ReviewAsider'
 
 enum PageTags {
   Review = 0,
   Summary,
   Setting
-}
-
-const ReadCSV = (file: File, handleData: (datas: any[]) => Promise<void>) => {
-  // 文件读取器
-  const reader = new FileReader()
-  reader.onload = async (e) => {
-    console.log('result', e.target?.result)
-    const result = e.target?.result
-    if (result) {
-      const parse_result = Papa.parse<{ q: string; a: string }>(result as string, {
-        header: true,
-        skipEmptyLines: true,
-        dynamicTyping: true, // 自动类型转换
-        transformHeader: (header) => header.trim(), // 清理表头
-        transform: (value: string, field: string | number) => {
-          // 自定义转换
-          if (field === 'isActive') {
-            return value.toLowerCase() === 'true'
-          }
-          return value
-        }
-      })
-      handleData(parse_result.data)
-    }
-  }
-  reader.onerror = (e) => {
-    console.log(e)
-  }
-  reader.readAsText(file)
 }
 
 export const ReviewWithContext = () => {
@@ -136,7 +109,7 @@ export const Review = () => {
                     for (const item of datas) {
                       const data = {
                         type: 0,
-                        content: JSON.stringify({ q: item.q, a: item.a }, null, 2)
+                        content: JSON.stringify({ q: item.q, a: item.a })
                       }
                       const resp = await axios.post('http://localhost:3001/api/review-items', data)
                       console.log(resp)
@@ -172,177 +145,6 @@ export const Review = () => {
     />
   )
 }
-
-const ReviewAsider = () => {
-  const [reviewSetList, setReviewSetList] = useState<IReviewSet[]>([])
-  const { reviewSet, setReviewSet } = useReviewSet()
-  useEffect(() => {
-    ;(async () => {
-      const data = await ReviewSetAxios.get('')
-      const raw_list = data.data.data
-
-      setReviewSetList([
-        ...raw_list.map((item) => {
-          try {
-            // TODO 解析setting 格式。是否有误/缺失
-            const setting = JSON.parse(item.setting)
-            console.log('setting', setting)
-            return { ...item, setting }
-          } catch (e) {
-            return { ...item, setting: DefaultSetting }
-          }
-        })
-      ])
-    })()
-  }, [])
-
-  const ReviewSetEntryItem = ({ item }: { item: IReviewSet }) => {
-    const FileInputRef = useRef<HTMLInputElement>(null)
-    return (
-      <div
-        className={layout_styles['review-set-card-container']}
-        onClick={() => {
-          setReviewSet(item) // Ctx 设置 set
-        }}
-      >
-        <p>{item.name}</p>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            if (FileInputRef.current) FileInputRef.current.click()
-          }}
-        >
-          add
-        </button>
-        <input
-          ref={FileInputRef}
-          style={{ display: 'none' }}
-          type="file"
-          accept=".txt,.csv,.json,.html,.js,.css,.xml"
-          onChange={async (e) => {
-            if (e.target.files) {
-              //   setFiles(Array.from(e.target.files))
-              const file = e.target.files[0]
-              if (!file) return
-              ReadCSV(file, async (datas) => {
-                for (const csv_item of datas) {
-                  const data = {
-                    type: 0,
-                    content: JSON.stringify({ q: csv_item.q, a: csv_item.a }, null, 2),
-                    review_set_id: item.id
-                  }
-                  try {
-                    const resp = await ReviewItemAxios.post('', data)
-                    console.log(resp) // 如果报错 conflict 就不会添加到 set
-                    if (resp.status == 200) {
-                      // 怎么判断请求成功？
-                      const resp1 = await ReviewSetAxios.post('/add-review-item', {
-                        review_set_id: item.id,
-                        review_item_id: resp.data.data.id // 返回一个id
-                      })
-                      console.log(resp1)
-                    }
-                  } catch (error) {
-                    const e = error as any
-                    console.log(e.response.data.message)
-                  }
-                }
-              })
-              // 重置。
-              e.target.value = ''
-            }
-          }}
-        />
-        <button
-          onClick={async (e) => {
-            // 删除锁：如果现在选中了，不允许删除。
-            if (reviewSet?.id === item.id) {
-              console.error('当前选中的，不允许删除')
-              return
-            }
-            e.stopPropagation()
-            const resp = await ReviewSetAxios.delete(``, { params: { set_id: item.id } })
-            if (resp.status == 204) {
-              setReviewSetList((prev) => [...reviewSetList.filter((item2) => item2.id !== item.id)])
-            } else {
-              console.log(resp)
-            }
-          }}
-        >
-          del
-        </button>
-      </div>
-    )
-  }
-  return (
-    <aside className={layout_styles['review-asider']}>
-      {/* header 显示当前的 set */}
-      <header className={layout_styles['review-asider-header']}>
-        {reviewSet && (
-          <>
-            <EditableInput
-              styles={{ fontSize: '20px', fontWeight: 'bold' }}
-              text={reviewSet.name}
-              updateText={(v) => {
-                setReviewSet({ ...reviewSet, name: v })
-              }}
-              saveText={async (v) => {
-                if (!v) return
-                const resp = await ReviewSetAxios.put('', { id: reviewSet.id, name: v })
-                console.log(resp)
-                setReviewSet({ ...reviewSet, name: v })
-                setReviewSetList(
-                  reviewSetList.map((item) => (item.id === reviewSet.id ? { ...reviewSet } : item))
-                )
-              }}
-            ></EditableInput>
-            <br />
-            <EditableInput
-              styles={{ fontSize: '12px', color: '#777' }}
-              text={reviewSet.description}
-              updateText={(v) => {
-                setReviewSet({ ...reviewSet, description: v })
-              }}
-              saveText={async (v) => {
-                if (!v) return
-                setReviewSet({ ...reviewSet, description: v })
-                const resp = await ReviewSetAxios.put('', {
-                  id: reviewSet.id,
-                  description: v
-                })
-                console.log(resp)
-              }}
-            ></EditableInput>
-            <p>create_at: {reviewSet.created_at}</p>
-          </>
-        )}
-      </header>
-      <main className={layout_styles['review-asider-main']}>
-        {reviewSetList.map((item) => (
-          <ReviewSetEntryItem item={item} key={item.id} />
-        ))}
-      </main>
-      <footer className={layout_styles['review-asider-footer']}>
-        <button
-          onClick={async () => {
-            const defaultSet = {
-              name: 'default' + Math.floor(Math.random() * 1000),
-              description: 'default',
-              setting: 'default'
-            }
-            const resp = await ReviewSetAxios.post('', defaultSet)
-            console.log('add review set', resp.data)
-            // 如果添加成功，同步更新前端列表
-            if (resp.status == 201) setReviewSetList([...reviewSetList, resp.data.data])
-          }}
-        >
-          add
-        </button>
-      </footer>
-    </aside>
-  )
-}
-
 const ReviewPage = () => {
   enum ReviewStages {
     Disable = 0, // 不可用。比如出现网络错误等情况
