@@ -14,7 +14,7 @@ export type ReviewContentType = Iqa
 export interface IReviewItem {
   id: number
   level: number
-  type: number
+  type: ReviewContentTypeEnum
   content: ReviewContentType
   last_reviewed_at: string
   next_review_at: string

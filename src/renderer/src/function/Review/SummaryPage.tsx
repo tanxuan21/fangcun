@@ -7,6 +7,7 @@ import { PageReviewItem } from './types'
 import { CoverLayerState } from '@renderer/components/CoverPageContainer'
 import { getRelativeTime } from '@renderer/utils/time'
 import { Tag } from 'antd'
+import { MDXRender } from '../../components/MarkdownRender/MDXRender'
 export const SummaryPage = () => {
   // 总数据
   //   const [summaryData, setSummaryData] = useState<IReviewItem[]>()
@@ -41,8 +42,12 @@ export const SummaryPage = () => {
   const QA = ({ q, a }: { q: string; a: string }) => {
     return (
       <div className={layout_styles['summary-table-qatd']}>
-        <div className={layout_styles['summary-table-q']}>{q}</div>
-        <div className={layout_styles['summary-table-a']}>{a}</div>
+        <div className={layout_styles['summary-table-q']}>
+          <MDXRender markdown={q} mode="preview"></MDXRender>
+        </div>
+        <div className={layout_styles['summary-table-a']}>
+          <MDXRender markdown={a} mode="preview"></MDXRender>
+        </div>
       </div>
     )
   }
