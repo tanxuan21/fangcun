@@ -227,7 +227,8 @@ const ReviewAsider = () => {
                 for (const csv_item of datas) {
                   const data = {
                     type: 0,
-                    content: JSON.stringify({ q: csv_item.q, a: csv_item.a }, null, 2)
+                    content: JSON.stringify({ q: csv_item.q, a: csv_item.a }, null, 2),
+                    review_set_id: item.id
                   }
                   try {
                     const resp = await ReviewItemAxios.post('', data)
