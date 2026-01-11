@@ -30,6 +30,7 @@ export function Home() {
           ></FunctionItem>
           <FunctionItem function_name={'背语群'} route_url=""></FunctionItem>
           <FunctionItem function_name={'复习安排'} route_url="/function/review"></FunctionItem>
+          <FunctionItem function_name={'空页面'} route_url="/empty-page"></FunctionItem>
           <button
             onClick={() => {
               window.api.UploadVideo2(1, 's')

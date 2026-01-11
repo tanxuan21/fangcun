@@ -28,6 +28,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@lordicon/element": "^2.0.1",
+    "@mdxeditor/editor": "^3.52.3",
     "@types/cors": "^2.8.19",
     "@types/lodash": "^4.17.19",
     "@types/papaparse": "^5.3.16",

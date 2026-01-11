@@ -1,6 +1,7 @@
 import { CoverLayerState, CoverPageContainer } from '@renderer/components/CoverPageContainer'
 import { useReviewSet } from '../ctx'
-import { CoverWindow, EditContent } from './EditContent'
+import { EditContent } from './EditContent'
+import { CoverWindow } from './CoverWindow/CoverWindow'
 import { ReviewContentTypeEnum } from '../../../../../../common/review'
 import { CoverFunctionType } from '../types'
 import { AddContent } from './AddContent'

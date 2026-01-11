@@ -10,6 +10,7 @@ import { DailyDev } from '@renderer/views/Daily/Dev/DailyDev'
 import { Daily } from '@renderer/views/Daily/Daily'
 import { ComponentRoute } from './ComponentRoute'
 import { FunctionRoute } from './FunctionRoute'
+import { EmptyDemo } from '@renderer/demo'
 export const route: RouteObject[] = [
   ...[
     {
@@ -44,7 +45,8 @@ export const route: RouteObject[] = [
     {
       path: '/app/daily/',
       element: <Daily />
-    }
+    },
+    { path: '/empty-page', element: <EmptyDemo></EmptyDemo> }
   ],
   ...ComponentRoute,
   ...FunctionRoute
