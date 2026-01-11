@@ -55,7 +55,7 @@ class ReviewSetDatabase {
   }
 
   // 给 review_set 添加 review_item
-  add_review_item_to_review_set(review_set_id: number, review_item_id: number) {
+  add_review_item_to_review_set(review_set_id: number, review_item_id: number | bigint) {
     const stmt = this.db.prepare(
       `INSERT INTO review_items2review_set (review_set_id, review_item_id) VALUES (?, ?)`
     )

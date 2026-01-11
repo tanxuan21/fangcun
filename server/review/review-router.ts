@@ -41,6 +41,10 @@ router.post(
   '/review-items',
   POST(async (req, res: ExtendResponse) => {
     const result = ReviewDataBaseInstance.add_review_item(req.body.type, req.body.content)
+    ReviewSetDataBaseInstance.add_review_item_to_review_set(
+      parseInt(req.body.review_set_id),
+      result.id
+    )
     if (!result.success) {
       throw AppError.conflict(`${result.id} already exists`)
     }
