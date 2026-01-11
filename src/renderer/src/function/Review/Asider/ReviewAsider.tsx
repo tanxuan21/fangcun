@@ -3,7 +3,7 @@ import layout_styles from './styles.module.scss'
 import { IReviewSet } from '../../../../../../types/review/review'
 import { useReviewSet } from '../ctx'
 import { ReviewItemAxios, ReviewSetAxios } from '../api'
-import { DefaultSetting } from '../Setting'
+import { DefaultSetting } from '../Setting/Setting'
 import { EditableInput } from '@renderer/components/Editable/EditableInput/EditableInput'
 import { ReadCSV } from '../utils/csv'
 import { IconTail, Icon } from '../../../components/Icon/index'
@@ -185,7 +185,8 @@ export const ReviewAsider = () => {
             const resp = await ReviewSetAxios.post('', defaultSet)
             console.log('add review set', resp.data)
             // 如果添加成功，同步更新前端列表
-            if (resp.status == 201) setReviewSetList([...reviewSetList, resp.data.data])
+            if (resp.status == 201)
+              setReviewSetList([...reviewSetList, { ...resp.data.data, setting: DefaultSetting }])
           }}
         />
       </footer>

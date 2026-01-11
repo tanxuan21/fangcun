@@ -15,3 +15,15 @@
     rotate: 0deg;
   }
 }
+
+
+.icon-tail-hover {
+  padding: 4px;
+  color: #777;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #00000021;
+  }
+}

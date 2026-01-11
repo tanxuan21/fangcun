@@ -34,6 +34,17 @@ export const IconTail = ({ IconName, style, className, onClick }: IconProps) => 
   )
 }
 
+type IconTailHoverProps = {} & IconProps
+export const IconTailHover = ({ IconName, style, className, onClick }: IconTailHoverProps) => {
+  return (
+    <IconTail
+      IconName={IconName}
+      style={{ ...style }}
+      className={`${styles['icon-tail-hover']} ${className}`}
+      onClick={onClick}
+    ></IconTail>
+  )
+}
 export const ExpandIconTail = ({
   style,
   className,

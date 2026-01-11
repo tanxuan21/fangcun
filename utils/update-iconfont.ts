@@ -17,7 +17,7 @@ const main = () => {
   const ICONFONT_URL = `https:${address}`
   console.log(`fetch ${ICONFONT_URL}`)
   https
-    .get(ICONFONT_URL, (res) => {
+    .get(ICONFONT_URL, (res: any) => {
       const file = fs.createWriteStream(OUTPUT_FILE)
       res.pipe(file)
       file.on('finish', () => {
@@ -25,7 +25,7 @@ const main = () => {
         console.log('Iconfont 文件下载完成！')
       })
     })
-    .on('error', (err) => {
+    .on('error', (err: any) => {
       console.error('下载失败:', err)
     })
 }

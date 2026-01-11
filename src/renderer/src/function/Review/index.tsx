@@ -20,14 +20,14 @@ import { shuffleArray } from '@renderer/utils'
 import { EditableInput } from '../../components/Editable/EditableInput/EditableInput'
 import { ReviewSetContext, useReviewSet } from './ctx'
 import React from 'react'
-import { DefaultSetting, Setting } from './Setting'
+import { DefaultSetting, Setting } from './Setting/Setting'
 import { CoverLayerState, CoverPageContainer } from '@renderer/components/CoverPageContainer'
 import { EditContent } from './CoverFunctionPages/EditContent'
 import { CoverWindow } from './CoverFunctionPages/CoverWindow/CoverWindow'
 import { ReviewCoverFunctionPage } from './CoverFunctionPages/ReviewCoverFunctionPage'
 import { CoverFunctionType, PageReviewItem } from './types'
 import { set } from 'lodash'
-import { SummaryPage } from './SummaryPage'
+import { SummaryPage } from './Summary/SummaryPage'
 import { ReadCSV } from './utils/csv'
 import { ReviewAsider } from './Asider/ReviewAsider'
 
@@ -137,7 +137,11 @@ export const Review = () => {
           </div>
         </header>
       }
-      main={<MainPages currentPage={currentPage}></MainPages>}
+      main={
+        <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+          <MainPages currentPage={currentPage}></MainPages>
+        </div>
+      }
       asider={showAside && <ReviewAsider></ReviewAsider>}
       footer={<footer className={layout_styles['review-footer']}></footer>}
       //   TODO 数据全部改为 Context。在 Conetxt 里，所有的组件都响应式更新。
