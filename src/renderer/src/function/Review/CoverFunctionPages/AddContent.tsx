@@ -28,6 +28,14 @@ export const AddContent = () => {
             }
             try {
               console.log('submit', q, a)
+              await ReviewItemAxios.post('', {
+                type: ReviewContentTypeEnum.qa,
+                content: JSON.stringify({
+                  q,
+                  a
+                }),
+                review_set_id: reviewSet.id
+              })
             } catch (e) {
               // TODO 弹窗报错
             }

@@ -40,6 +40,7 @@ router.get(
 router.post(
   '/review-items',
   POST(async (req, res: ExtendResponse) => {
+    console.log('req.body:', req.body)
     const result = ReviewDataBaseInstance.add_review_item(req.body.type, req.body.content)
     ReviewSetDataBaseInstance.add_review_item_to_review_set(
       parseInt(req.body.review_set_id),
@@ -55,6 +56,7 @@ router.post(
 
 router.put('/review-items', (req, res) => {
   try {
+    console.log('req.body:', req.body)
     const result = ReviewDataBaseInstance.update_review_item(req.body.id, req.body.updates)
     makeSuccessRep(res, result)
   } catch (e) {

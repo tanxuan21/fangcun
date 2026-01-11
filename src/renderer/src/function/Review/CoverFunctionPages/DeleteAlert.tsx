@@ -4,6 +4,7 @@ import { CoverLayerState } from '@renderer/components/CoverPageContainer'
 import styles from './window-page-skeleton-styles.module.scss'
 import { MDXRender } from '../../../components/MarkdownRender/MDXRender'
 import { QARender } from './ContetRenderer/QARender'
+import { ReviewItemAxios } from '../api'
 export const DeleteAlter = () => {
   const { OperReviewItem, setCoverState } = useReviewSet()
   return (
@@ -23,7 +24,17 @@ export const DeleteAlter = () => {
           danger
           color="red"
           type="primary"
-          onClick={() => setCoverState(CoverLayerState.hidden)}
+          onClick={async () => {
+            try {
+              if (!OperReviewItem) throw new Error('OperReviewItem is null')
+              const resp = await ReviewItemAxios.delete('', { params: { id: OperReviewItem.id } })
+              console.log(resp.data)
+              setCoverState(CoverLayerState.hidden)
+            } catch (e) {
+              alert('删除失败')
+              console.log(e)
+            }
+          }}
         >
           delete
         </Button>

@@ -7,6 +7,7 @@ import { Button } from 'antd'
 import { CoverLayerState } from '@renderer/components/CoverPageContainer'
 import { MDXRender } from '../../../components/MarkdownRender/MDXRender'
 import { QARender } from './ContetRenderer/QARender'
+import { ReviewItemAxios } from '../api'
 
 interface props {
   type: ReviewContentTypeEnum
@@ -35,7 +36,24 @@ export const EditContent = () => {
               ></QARender>
             </main>
             <footer>
-              <Button type="primary" onClick={() => setCoverState(CoverLayerState.hidden)}>
+              <Button
+                type="primary"
+                onClick={async () => {
+                  try {
+                    await ReviewItemAxios.put('', {
+                      id: OperReviewItem.id,
+                      updates: {
+                        type: OperReviewItem.type,
+                        content: JSON.stringify(OperReviewItem.content)
+                      }
+                    })
+                  } catch (e) {
+                    alert('提交失败')
+                    console.log(e)
+                  }
+                  setCoverState(CoverLayerState.hidden)
+                }}
+              >
                 submit
               </Button>
               <Button>restore</Button>
