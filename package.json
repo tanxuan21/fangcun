@@ -102,6 +102,10 @@
     },
     "mac": {
       "target": "dmg"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   },
   "repository": {
