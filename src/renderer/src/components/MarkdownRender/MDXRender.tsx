@@ -9,7 +9,7 @@ import {
 import { MarkdownRenderMode } from './types'
 
 interface props {
-  markdown: string
+  markdown: string | undefined
   onChange?: (md: string) => void
   mode: MarkdownRenderMode
 }
@@ -17,7 +17,7 @@ export function MDXRender({ markdown, onChange, mode }: props) {
   return (
     <MDXEditor
       readOnly={mode === 'preview'}
-      markdown={markdown}
+      markdown={markdown || ''}
       plugins={[
         headingsPlugin(),
         listsPlugin(),
